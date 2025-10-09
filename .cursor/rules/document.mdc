@@ -1,0 +1,12 @@
+---
+globs: *.md
+alwaysApply: false
+---
+
+Document/Markdown files should never by in the root direcory!
+
+Root directory has; tasks.md, fineopinions_diagram.md, and fineopinion_node_settings.md ONLY! All other docs are in other folders.
+
+If a doc is useful for user or developer, but it in docs. If the document is notes, creative, desicion documentation, put it in the memory-bank folder.
+
+Keep root clean
