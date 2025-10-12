@@ -74,37 +74,45 @@ Prompt Engineering: Significant effort will be dedicated to creating robust and 
 
 (This section remains unchanged, as the sources are still the core input)
 
-### Source 1: The Broad Economic & Geopolitical Context
+### Source 1: European Central Bank (ECB)
 
-**Feed:** The Economist: The World in Brief
+Feed: https://www.ecb.europa.eu/rss/press.xml
+Focus: Official economic outlooks, monetary policy decisions, speeches, and statistics.
+Why it’s valuable: ECB releases are authoritative and timely, making them ideal for understanding macroeconomic policy drivers and European market sentiment.​
 
-**URL:** https://www.economist.com/the-world-in-brief/rss.xml
+### Source 2: MarketWatch
 
-**Reasoning:** Provides the essential "why" behind market movements.
+Feed: https://www.marketwatch.com/rss/topstories
+Focus: Key global market summaries, major earnings, and financial trends.
+Why it’s valuable: MarketWatch provides concise, accessible coverage without excessive volume, focusing on the most impactful daily developments.​
 
-### Source 2: The Key Financial Market Snapshot
+### Source 3: Nasdaq Original Articles
 
-**Feed:** Bloomberg: Five Things to Know to Start Your Day
+Feed: https://www.nasdaq.com/feed/nasdaq-originals
+Focus: Stock market reports, investor insights, and forward-looking commentary.
+Why it’s valuable: Includes market sentiment and trend analysis, ideal for summarizing daily equity and sector movements.​
 
-**URL:** https://assets.bwbx.io/av/podcasts/daybreak/rss.xml
+### Source 4: BNP Paribas Economic Research
 
-**Reasoning:** Provides the "what's happening now" market drivers.
+Feed: https://economic-research.bnpparibas.com/RSS/en-US
+Focus: Economic analysis and data-driven research from BNP economists.
+Why it’s valuable: Offers in-depth perspectives on global and regional trends — great for enhancing the analytical content of a weekly report.​
 
-### Source 3: The Unbiased, Factual News Wire
+### Source 5:Finance Monthly
 
-**Feed:** Reuters: Top News
+Feed: https://www.finance-monthly.com/feed
+Focus: Global business finance, sustainability, and fintech coverage.
+Why it’s valuable: Publication-grade content summarizing corporate and policy news, with low posting frequency suitable for summaries and AI processing.​
 
-**URL:** https://www.reuters.com/news/rss/topNews
+### Source 6: CNBC World Business
 
-**Reasoning:** Provides the "ground truth" with unbiased, factual reporting.
+Feed: https://www.cnbc.com/id/100003114/device/rss/rss.html
+Focus: Business, macroeconomics, and market movement summaries.
+Why it’s valuable: A globally recognized financial source offering factual, up-to-date insight into both Western and Asian markets.​
 
-### Source 4: Market-Focused Business & Investment News
+### Source 7
 
-**Feed:** MarketWatch: Top Stories
-
-**URL:** https://feeds.content.dowjones.io/public/rss/mw_topstories
-
-**Reasoning:** Provides up-to-the-minute market movements, investment insights, and business news tailored for investors and traders.
+Money RSS Feed: https://money.com/money/feed — accessible personal finance and economy coverage
 
 ## Success Criteria
 
