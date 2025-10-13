@@ -1,14 +1,113 @@
-# Welcome to FineOpinion
+# Welcome to FineOpinions
 
-**An Opiionated Financial Newsletter**
+**An Opinionated Financial Newsletter with Actual Personality** 🍀
 
-## Project Goal
+**Current Status:** Prompt Engineering Complete ✅ - Ready for BUILD MODE  
+**Last Updated:** October 9, 2025  
+**Quick Start:** Read `/START-HERE.md` for 15-minute overview
 
-To create a low-maintenance, automated workflow using n8n that consumes information from a small set of curated news feeds, stores and processes the content through a multi-agent AI system, and produces concise daily and weekly reports. The objective is to provide a high-level, "need-to-know" overview of economic and financial news without the noise of high-volume sources.
+---
 
-### High-Level Workflow
+## 🎯 Project Goal
 
-A scheduled n8n workflow will trigger twice daily, ingesting articles from selected RSS feeds. The content will be stored, processed by a primary LLM agent to create a daily digest, and then a secondary agent will compile these digests into a weekly analytical report delivered via email.
+Create an automated financial news digest delivered **every other day** (48-hour cycle) that provides:
+
+- **Trustworthy facts** (wire service journalism standards)
+- **Actual personality** (Northern Irish wit, edgy humor)
+- **Accessible language** (for intelligent non-experts)
+- **Enjoyable reading** (5-6 minutes of financial news you'll actually want to read)
+
+**Think:** The Economist meets your smartest, funniest mate from Belfast explaining economics over pints.
+
+---
+
+## 🎭 Multi-Agent Architecture
+
+FineOpinions uses a **4-agent AI pipeline** inspired by traditional newsrooms:
+
+```
+RSS Feeds → Content Scraper → Desk Reporter → Journalist → Editorial Writer → Copywriter → Email
+```
+
+### Agent 1: Desk Reporter
+
+- Processes individual articles (4x per 48 hours)
+- Extracts facts, scores relevance (1-10 scale)
+- Filters noise (threshold: relevance >= 4)
+- **Model:** llama3.2:3b (fast) or qwen2.5:7b (quality)
+
+### Agent 2: Journalist (FACTS FIRST)
+
+- Synthesizes top 25 articles into factual narrative
+- Wire service style - NO opinion, NO speculation
+- Uses Wikipedia tool for fact verification
+- **Model:** qwen2.5:7b
+- **Output:** 500-700 words of pure facts
+
+### Agent 3: Editorial Writer (CHARACTER & FUN)
+
+- Adds perspective, personality, makes it ENJOYABLE
+- Northern Irish voice: smart, sardonic, edgy humor
+- Explains WHY it matters in plain language
+- Gallows humor allowed, calls out bullshit
+- **Model:** qwen2.5:7b or qwen2.5:14b
+- **Voice Guide:** 60+ examples for consistency
+
+### Agent 4: Copywriter
+
+- Final polish and HTML formatting
+- Magazine-style email structure
+- Edgy subject lines (match Editorial voice)
+- **Model:** qwen2.5:7b
+- **Output:** 750-1000 word HTML email
+
+---
+
+## 📅 Delivery Schedule
+
+**RSS Processing:** Twice daily (7AM & 7PM)  
+**Digest Delivery:** Every other day (6AM)  
+**Cycle:** 48 hours of news per digest
+
+**Example:**
+
+- Days 1-2: Collect and process articles (4 RSS pulls)
+- Day 3, 6AM: Generate and send digest
+- Days 4-5: Collect and process articles
+- Day 6, 6AM: Generate and send digest
+
+**Result:** ~3 digests per week (not overwhelming, comprehensive coverage)
+
+---
+
+## 🔑 Core Design Philosophy
+
+**FACTS FIRST, CHARACTER SECOND**
+
+The multi-agent workflow separates facts from opinion:
+
+- 🗞️ **Journalist** = FACTS ONLY (objective, no speculation)
+- ✍️ **Editorial** = CHARACTER & FUN (perspective, wit, personality)
+
+**This ensures:**
+
+- Factual integrity (trust the facts)
+- Editorial freedom (enjoy the perspective)
+- Clear separation (readers know what's what)
+- Modularity (can adjust tone independently)
+
+---
+
+## 🛠️ Technical Stack
+
+### Infrastructure
+
+- **n8n:** v1.114.4 (self-hosted workflow automation)
+- **LLM:** Ollama (local inference)
+  - llama3.2:3b (fast processing)
+  - qwen2.5:7b (quality synthesis)
+- **Database:** Airtable (2 tables, 40+ fields)
+- **Email:** n8n Send Email Node (HTML)
 
 ### Workflow Architecture & Technical Specification
 
