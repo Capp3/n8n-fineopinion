@@ -1,17 +1,17 @@
 # Tasks - FineOpinions Project
 
-**Last Updated:** October 9, 2025 (SESSION COMPLETE ✅)  
-**Current Phase:** Prompt Engineering COMPLETE - Ready for BUILD MODE  
-**Session Status:** REFLECTED - All documentation updated  
+**Last Updated:** October 9, 2025 (ORGANIZATION COMPLETE ✅)  
+**Current Phase:** Documentation Organized - Ready for BUILD MODE  
+**Session Status:** REFLECTED + ORGANIZED  
 **Next Mode:** BUILD MODE (n8n Implementation)
 
 ---
 
 ## 📊 Session Summary (October 9, 2025)
 
-**Duration:** ~6 hours  
-**Modes:** PLAN → CREATIVE → IMPLEMENT → REFLECT  
-**Deliverables:** 4 complete agent prompts (1,839 lines) + architecture (2,500+ lines)  
+**Duration:** ~8 hours total  
+**Modes:** PLAN → CREATIVE → IMPLEMENT → REFLECT → ORGANIZE  
+**Deliverables:** 4 complete agent prompts (1,839 lines) + architecture (2,500+ lines) + organized docs  
 **Status:** ✅ All objectives achieved and exceeded
 
 **What We Built:**
@@ -19,10 +19,19 @@
 - ✅ Complete 4-agent pipeline architecture
 - ✅ All 4 agent prompts (production-ready)
 - ✅ Northern Irish editorial voice (60+ examples)
-- ✅ Complete documentation (~5,300 lines)
-- ✅ Handoff materials (ready for team continuation)
+- ✅ Complete documentation (~5,600 lines organized)
+- ✅ Documentation organization (20 files, no duplication)
+- ✅ Master index with role-based navigation
+- ✅ Implementation guide + Airtable setup guide
 
 **Ready For:** BUILD MODE - n8n workflow implementation
+
+**Documentation Structure:**
+
+- Root: 3 files (minimal, as requested)
+- docs/: 6 files (implementation guides & reference)
+- memory-bank/: 8 files (architecture & design)
+- prompts/: 4 files (ready for n8n)
 
 ---
 
@@ -88,75 +97,137 @@
 
 ---
 
-## 📋 PHASE 2: n8n IMPLEMENTATION (BUILD MODE - Next Session)
+## 📋 PHASE 2: n8n IMPLEMENTATION - MODULAR BUILD (Next Session)
 
 **Status:** ⏳ Ready to begin  
-**Estimated Time:** 50-75 hours over 2-3 weeks  
-**Prerequisites:** ✅ All prompts complete, architecture documented
+**Approach:** Build one module, test it, move to next  
+**Strategy:** No feature creep - stick to 6 defined modules  
+**Documentation:** `/memory-bank/build-implementation-plan.md` + `/docs/build-roadmap.md`
 
-### Phase 1: RSS Retrieval & Basic Storage
+---
 
-- [ ] Set up scheduled trigger (7AM/7PM)
-- [ ] Configure RSS Feed Read nodes
-- [ ] Implement staggered execution (1-minute delays between feeds)
-- [ ] Create Airtable "Articles" table with defined schema
-- [ ] Implement RSS parsing and XML validation
-- [ ] Test deduplication logic against Airtable
-- [ ] Implement error logging and monitoring
-- [ ] Test end-to-end RSS retrieval
+### 🏗️ MODULE 1: Single Feed Processor (Week 1, Days 1-4)
 
-### Phase 2: Content Scraping Implementation (BUILD MODE)
+**Goal:** RSS → Scrape → Desk Reporter → Airtable (Economist ONLY)  
+**Time:** 6-8 hours  
+**Status:** Foundation - must work before proceeding
 
-**Prerequisite**: Complete CREATIVE MODE for HTML extraction strategy
+- [ ] **Sub-Task 1.1:** Create Airtable Articles table (13 minimum fields)
+- [ ] **Sub-Task 1.2:** Build RSS fetch (Economist only)
+- [ ] **Sub-Task 1.3:** Generate URL hash + title normalization
+- [ ] **Sub-Task 1.4:** Implement deduplication check
+- [ ] **Sub-Task 1.5:** Build content scraping (HTTP Request + HTML Extract)
+- [ ] **Sub-Task 1.6:** Integrate Desk Reporter (AI Agent node)
+- [ ] **Sub-Task 1.7:** Store in Airtable (all fields)
+- [ ] **Test:** Process 5 Economist articles, validate Airtable entries
 
-- [ ] Implement HTTP Request scraping (primary method)
-- [ ] Test HTTP scraping against each news source
-- [ ] Implement browser automation fallback (Playwright/Puppeteer)
-- [ ] Implement SearXNG integration (optional fallback)
-- [ ] Add content validation logic (min 100 chars)
-- [ ] Implement retry logic (max 3 attempts)
-- [ ] Test scraping success rates per source
-- [ ] Document scraping patterns and issues
+**Success:** ✅ One feed working end-to-end, template ready for duplication
 
-### Phase 3: AI Agent Integration (BUILD MODE)
+---
 
-**Prerequisite**: Complete CREATIVE MODE for prompt engineering
+### 🔄 MODULE 2: Multi-Feed Orchestrator (Week 1, Day 5)
 
-- [ ] Configure Ollama integration in n8n
-- [ ] Implement AI Agent nodes with designed prompts
-- [ ] Implement model selection logic (based on article size)
-- [ ] Test with sample articles from each source
-- [ ] Implement JSON output validation
-- [ ] Implement retry logic for malformed outputs
-- [ ] Test relevance scoring accuracy
-- [ ] Optimize prompt based on test results
-- [ ] Benchmark token usage and processing time
+**Goal:** Duplicate Module 1 for all 4 feeds + stagger  
+**Time:** 2-3 hours  
+**Prerequisites:** Module 1 working perfectly
 
-### Phase 4: Full Pipeline Integration (BUILD MODE)
+- [ ] Duplicate Module 1 workflow (save as "Feed 2: Bloomberg")
+- [ ] Duplicate Module 1 workflow (save as "Feed 3: Reuters")
+- [ ] Duplicate Module 1 workflow (save as "Feed 4: MarketWatch")
+- [ ] Change RSS URL in each workflow
+- [ ] Create orchestrator workflow (calls all 4 with 1-min delays)
+- [ ] Test with live RSS feeds
+- [ ] Validate all 4 feeds populate Airtable
 
-- [ ] Connect all components end-to-end
-- [ ] Implement comprehensive error handling throughout
-- [ ] Add retry logic with exponential backoff
-- [ ] Test with live RSS feeds (all 4 sources)
-- [ ] Monitor performance and success rates
-- [ ] Optimize for efficiency and resource usage
-- [ ] Implement workflow metrics tracking
-- [ ] Create admin summary email notification
+**Success:** ✅ All 4 feeds processing, 30-50 articles per cycle
 
-### Phase 5: Monitoring & Refinement (QA MODE)
+---
 
-- [ ] Set up workflow monitoring dashboard
-- [ ] Implement metrics collection:
-  - [ ] RSS fetch success rate (target: >95%)
-  - [ ] Article scraping success rate (target: >85%)
-  - [ ] AI processing success rate (target: >90%)
-  - [ ] Deduplication accuracy (target: >99%)
-  - [ ] Airtable ingest success rate (target: >98%)
-  - [ ] End-to-end processing time (target: <10 min)
-- [ ] Test data retention policy (30 days for FullText)
-- [ ] Create workflow documentation
-- [ ] Create maintenance runbook
-- [ ] Conduct final QA testing
+### 📰 MODULE 3: Journalist Agent (Week 2, Days 6-7)
+
+**Goal:** Airtable → Journalist → Digests table  
+**Time:** 4-5 hours  
+**Prerequisites:** Airtable has 30+ test articles
+
+- [ ] Create Airtable Digests table (Journalist fields)
+- [ ] Build Airtable query (48-hour window, relevance >= 4)
+- [ ] Implement filter + sort logic
+- [ ] Build article formatter (top 25 articles)
+- [ ] Configure Journalist AI Agent node (with Wikipedia tool)
+- [ ] Test synthesis with sample 25-article batch
+- [ ] Validate JSON output
+- [ ] Store in Digests table
+
+**Success:** ✅ Journalist produces coherent factual synthesis
+
+---
+
+### ✍️ MODULE 4: Editorial Agent (Week 2, Days 8-9)
+
+**Goal:** Add Northern Irish voice and perspective  
+**Time:** 3-4 hours  
+**Prerequisites:** Module 3 working, sample Journalist output
+
+- [ ] Build Editorial AI Agent node
+- [ ] Test with sample Journalist JSON
+- [ ] Validate Northern Irish voice present
+- [ ] Check tone adaptation to market mood
+- [ ] Verify colorful language appropriately used
+- [ ] Update Digests table with Editorial fields
+- [ ] Test multiple market moods (bullish, bearish, uncertain)
+
+**Success:** ✅ Editorial adds CHARACTER and is fun to read
+
+---
+
+### 📧 MODULE 5: Copywriter Agent (Week 2, Day 10)
+
+**Goal:** Format to HTML and send email  
+**Time:** 3-4 hours  
+**Prerequisites:** Module 4 working, sample Editorial output
+
+- [ ] Build Copywriter AI Agent node
+- [ ] Test HTML generation
+- [ ] Validate subject line is edgy (under 60 chars)
+- [ ] Check HTML renders properly (validate code)
+- [ ] Configure Send Email node
+- [ ] Send test email to yourself
+- [ ] Test rendering in Gmail, Outlook, Apple Mail
+- [ ] Update Digests table with email fields
+
+**Success:** ✅ Beautiful HTML email delivered successfully
+
+---
+
+### 🎭 MODULE 6: Digest Orchestrator (Week 3, Days 11-12)
+
+**Goal:** Chain all agents with schedule  
+**Time:** 2-3 hours  
+**Prerequisites:** Modules 3, 4, 5 all working
+
+- [ ] Create digest orchestrator workflow
+- [ ] Configure schedule trigger (6AM every other day)
+- [ ] Chain Journalist → Editorial → Copywriter
+- [ ] Test with manual trigger first
+- [ ] Run complete 48-hour simulation
+- [ ] Validate end-to-end processing time (<20 min)
+- [ ] Mark digest as "sent" in Airtable
+
+**Success:** ✅ Automated digest generation working
+
+---
+
+### 🧪 TESTING & GO-LIVE (Week 3, Days 13-15)
+
+- [ ] Run 2-3 complete digest cycles with real data
+- [ ] Monitor all modules for errors
+- [ ] Refine prompts based on actual outputs
+- [ ] Optimize performance if needed
+- [ ] Set production schedule
+- [ ] Send first real digest
+- [ ] Monitor and adjust
+
+**Success:** ✅ FineOpinions is LIVE! 🎉
 
 ---
 
