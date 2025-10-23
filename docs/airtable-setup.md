@@ -81,6 +81,9 @@ Stores all processed articles with Desk Reporter analysis, facts, relevance scor
 
 **Add URLHash:** 7. Click "+ Add field" 8. Type: **Single Line Text** 9. Name: `URLHash` 10. Check "Don't allow duplicate values" ✅
 
+> **⚠️ Important - Deduplication Strategy:**  
+> The unique constraints on URL and URLHash **prevent duplicates at the database level**, but Airtable doesn't have a "skip if exists" feature when creating records. Instead, **we handle deduplication in the n8n workflow** (Module 1, Sub-Task 1.4) by querying Airtable BEFORE attempting to insert. If a record with the same URLHash exists, we skip that article entirely. This prevents duplicate insert errors.
+
 **Add Source:** 11. Click "+ Add field" 12. Type: **Single Select** 13. Name: `Source` 14. Add options: `economist`, `bloomberg`, `reuters`, `marketwatch` 15. Choose colors for each
 
 **Add PubDate:** 16. Click "+ Add field" 17. Type: **Date** 18. Name: `PubDate` 19. Date format: **Friendly** (e.g., "October 9, 2025") 20. Include time: **Yes** ✅ 21. Time format: **24 hour** 22. GMT offset: **Use same timezone for all collaborators**
@@ -536,6 +539,84 @@ const entities = JSON.parse($json.EntitiesJSON);
 
 **Solution:** Ensure value is numeric, not string  
 **Example:** `{{ Number($json.relevanceScore) }}`
+
+---
+
+## 🔄 Deduplication Strategy (Important!)
+
+### Why Airtable Can't Prevent Duplicates Automatically
+
+Airtable **does not** have a built-in "skip if exists" feature when creating records through the API or n8n. According to the [Airtable Community](https://community.airtable.com/automations-8/prevent-duplicates-during-automation-23842), the recommended pattern is:
+
+1. **Find Records** - Search for existing record
+2. **Conditional** - Only create if not found
+
+### Our Deduplication Approach (n8n Workflow)
+
+We implement deduplication **in the n8n workflow** (Module 1, Sub-Task 1.4), **before** attempting to write to Airtable:
+
+```
+RSS Feed → Generate URLHash → Search Airtable → IF Not Found → Continue
+                                                 → IF Found → Skip Article
+```
+
+### How It Works
+
+**Step 1: Generate URL Hash (Function Node)**
+
+```javascript
+const crypto = require("crypto");
+const url = $json.link || $json.url;
+const urlHash = crypto.createHash("md5").update(url).digest("hex");
+
+return {
+  ...item.json,
+  url: url,
+  urlHash: urlHash,
+};
+```
+
+**Step 2: Query Airtable (Airtable Node - Search)**
+
+```javascript
+Operation: Search
+Table: Articles
+Formula: {URLHash} = "{{ $json.urlHash }}"
+```
+
+**Step 3: Check if Exists (IF Node)**
+
+```javascript
+Conditions:
+  - Value 1: {{ $json.records }}
+  - Operation: Is Empty
+
+IF TRUE (empty = no existing record) → Continue to scraping
+IF FALSE (record exists) → Skip this article (workflow ends)
+```
+
+### Why This Works
+
+- **Unique constraints** (URL and URLHash fields) prevent duplicates at the **database level**
+- **n8n deduplication** prevents duplicate **insert attempts** (no errors)
+- **URLHash** is faster to search than full URL text
+- **MD5 hash** is deterministic (same URL = same hash)
+
+### What Happens If You Skip This
+
+If you try to insert a duplicate without checking first:
+
+- Airtable will **reject** the insert (unique constraint violation)
+- n8n workflow will **error**
+- Article will **not** be processed
+
+**That's why we check BEFORE attempting to insert!**
+
+### Reference
+
+- **Community Discussion:** [Prevent Duplicates During Automation](https://community.airtable.com/automations-8/prevent-duplicates-during-automation-23842)
+- **Implementation:** `/memory-bank/build-implementation-plan.md` - Module 1, Sub-Task 1.4
+- **Full Deduplication Code:** See Module 1, Sub-Tasks 1.3 & 1.4
 
 ---
 
