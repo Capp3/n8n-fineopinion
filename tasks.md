@@ -1,396 +1,338 @@
-# Tasks - FineOpinions Project
+# FineOpinions - Task List
 
-**Last Updated:** October 9, 2025 (ORGANIZATION COMPLETE ✅)  
-**Current Phase:** Documentation Organized - Ready for BUILD MODE  
-**Session Status:** REFLECTED + ORGANIZED  
-**Next Mode:** BUILD MODE (n8n Implementation)
+**Last Updated:** October 25, 2025 (Airtable Documentation Fully Updated 📊)  
+**Status:** Implementation Phase - Building Workflow 2 (Content Scraping & AI Processing)  
+**Current Phase:** Airtable Setup Complete (36 fields documented) → Ready for Workflow 2 Build
 
 ---
 
-## 📊 Session Summary (October 9, 2025)
+## 📊 Latest Update: Airtable Documentation Complete
 
-**Duration:** ~8 hours total  
-**Modes:** PLAN → CREATIVE → IMPLEMENT → REFLECT → ORGANIZE  
-**Deliverables:** 4 complete agent prompts (1,839 lines) + architecture (2,500+ lines) + organized docs  
-**Status:** ✅ All objectives achieved and exceeded
+**Date:** October 25, 2025
 
-**What We Built:**
+### What Was Updated
+
+✅ **Complete Airtable setup documentation overhaul**
+
+- **36 fields** fully documented (was 17)
+- Organized into **7 logical categories**
+- **ADR-001 status management** integrated
+- **Workflow-specific field mapping** documented
+- **10-step creation guide** with field numbering
+- **7 recommended Airtable views** for monitoring
+- **Enhanced validation checklist** (34 items)
+- Modern **API token setup** instructions
+
+### Documents Updated
+
+- ✅ [`docs/airtable-setup.md`](./docs/airtable-setup.md) - 1140 lines (+68% expansion)
+- ✅ [`docs/AIRTABLE-UPDATE-SUMMARY.md`](./docs/AIRTABLE-UPDATE-SUMMARY.md) - Complete change summary
+
+### Next Actions
+
+1. Review updated Airtable documentation
+2. Verify your Airtable has all 36 fields
+3. Add any missing fields following the guide
+4. Create the 7 recommended views
+5. Continue with Workflow 2 implementation
+
+---
+
+## 🎯 Current Implementation Priority
+
+### **🏗️ ARCHITECTURAL DECISION: Separated Workflows (ADR-001)**
+
+**Decision Date:** October 25, 2025  
+**Status:** Accepted and Fully Documented 📋  
+**Impact:** High - Core Architecture Change
+
+**Key Change:** The system is now split into **two independent workflows**:
+
+1. **Workflow 1: Article Fetching & Storage** (Current focus - Almost complete)
+
+   - Fetch RSS feeds every 15 minutes
+   - Normalize and validate data (4-stage pipeline)
+   - Store in Airtable with `Status = needs_scraping`
+   - Fast and lightweight (~30-60 seconds)
+
+2. **Workflow 2: Content Scraping & AI Processing** (Next implementation)
+   - Query articles with `Status = needs_scraping`
+   - Scrape full content with adaptive strategies (HTTP/Playwright/SearXNG)
+   - Process with AI agents
+   - Update status to `processed`
+   - Run every hour or on-demand
+
+**Benefits:**
+
+- 🎯 70-80% reduction in HTTP requests (no scraping for duplicates)
+- 🛡️ Failure isolation (scraping failures don't block RSS fetching)
+- ⏱️ Flexible scheduling for each workflow
+- 📈 Independent scaling
+
+**📖 Full Documentation:** [ADR-001: Separated Workflows](./docs/architecture-decisions/ADR-001-separated-workflows.md)
+
+---
+
+### **Task 1.0: WORKFLOW 1 - RSS Fetching & Storage Pipeline** 📊
+
+**Goal:** Implement 4-stage RSS feed normalization pipeline with Airtable upsert  
+**Status:** Almost Complete - Need to add Status fields to Airtable ✅
+
+**Prerequisites:** Creative design complete, node settings documented, ADR-001 documented ✅
+
+**Sub-Tasks:**
+
+- [x] **Sub-Task 1.1:** Create n8n workflow with 7 RSS feed nodes
+- [x] **Sub-Task 1.2:** Implement merge node configuration
+- [x] **Sub-Task 1.3:** Fix URL constructor issue in Basic Field Normalizer (Stage 1)
+- [x] **Sub-Task 1.4:** Build Content Processor (Stage 2)
+- [x] **Sub-Task 1.5:** Build Metadata Processor (Stage 3)
+- [x] **Sub-Task 1.6:** Fix data structure in Validator & Airtable Mapper (Stage 4)
+- [ ] **Test:** Validate all 7 feeds process correctly
+
+**Success Criteria:**
+
+- All 7 RSS feeds normalized to consistent schema
+- Content properly cleaned and processed
+- Metadata extracted from all feed formats
+- Validation catches and reports errors
+- Data ready for Airtable storage
+
+**Progress Notes:**
+
+- ✅ Fixed Node 10 (Basic Field Normalizer): Replaced `new URL()` with string matching (URL constructor not available in n8n)
+- ✅ All 7 RSS feeds configured and connecting to merge node
+- ✅ Nodes 11-12 (Content & Metadata Processors) working
+- ✅ Fixed Node 13 (Validator): Changed `item.json.isValid` to `item.isValid` (data structure issue)
+- ⚠️ **CRITICAL FIX:** Node 9 Merge must use "Append" mode, not "Combine By Position" (was limiting to 5 items)
+- ✅ **WORKFLOW FIX:** Removed old Node 14 (Dedup Check) - blocking flow with empty results. Using Airtable Upsert instead!
+- 🔄 Testing complete post-processing pipeline (Nodes 9-13)
+- 🔄 Ready for content scraping (Node 14+)
+
+---
+
+## 🎯 Next Priority Tasks
+
+### **Task 1.1: WORKFLOW 2 - Content Scraping & AI Processing Pipeline** 🕷️
+
+**Goal:** Build independent workflow to scrape content and process with AI agents  
+**Status:** 🚀 IN PROGRESS - Implementation Guide Created  
+**Architecture:** Separated Workflows (ADR-001)  
+**Implementation Guide:** [docs/IMPLEMENT-WORKFLOW-2.md](./docs/IMPLEMENT-WORKFLOW-2.md)
+
+**Prerequisites:**
+
+- [x] Workflow 1 (RSS Fetching) operational
+- [x] Airtable Articles table has Status management fields
+- [ ] Airtable has test articles with `Status = needs_scraping`
+
+**Sub-Tasks:**
+
+#### Phase 1: Airtable Query & Strategy Selection
+
+- [ ] **Sub-Task 1.1.1:** Create new workflow "Workflow 2 - Content Scraping"
+- [ ] **Sub-Task 1.1.2:** Add Airtable node to query articles
+  - Filter: `Status = needs_scraping` AND `ScrapingAttempts < 3`
+  - Sort: PubDate DESC
+  - Limit: 50 (batch processing)
+- [ ] **Sub-Task 1.1.3:** Add Code node for adaptive strategy selection
+  - Select strategy based on source and previous attempts
+  - Increment ScrapingAttempts
+  - Update LastScrapingAttempt timestamp
+
+#### Phase 2: Content Scraping Implementation
+
+- [ ] **Sub-Task 1.1.4:** Implement HTTP Request scraper (simple sources)
+  - ECB, Finance Monthly, BNP Paribas
+  - User-Agent headers
+  - Timeout: 10 seconds
+- [ ] **Sub-Task 1.1.5:** Set up Playwright Docker container
+  - Pull mcr.microsoft.com/playwright:latest
+  - Test container execution
+- [ ] **Sub-Task 1.1.6:** Implement Playwright scraper (anti-scraping sources)
+  - MarketWatch, NASDAQ, CNBC, Money
+  - Execute Command node with Docker
+  - Handle dynamic content loading
+- [ ] **Sub-Task 1.1.7:** Configure SearXNG fallback
+  - Use existing SearXNG instance
+  - Query by article title + source
+  - Extract relevant content from results
+
+#### Phase 3: AI Agent Processing
+
+- [ ] **Sub-Task 1.1.8:** Build Desk Reporter prompt (Agent 1)
+- [ ] **Sub-Task 1.1.9:** Process scraped content through Ollama
+  - Model: llama3.2:3b
+  - JSON output format
+  - Error handling for malformed responses
+
+#### Phase 4: Status Updates & Error Handling
+
+- [ ] **Sub-Task 1.1.10:** Update Airtable after successful scraping
+  - Status = `scraped`
+  - Store scraped content in FullText field
+  - Record ScrapingStrategy used
+- [ ] **Sub-Task 1.1.11:** Handle scraping failures
+  - Status = `scraping_failed`
+  - Log error in ScrapingError field
+  - Keep in queue for retry (if attempts < 3)
+- [ ] **Sub-Task 1.1.12:** Update status after AI processing
+  - Status = `processed`
+  - Store AI output fields
+
+#### Phase 5: Testing & Monitoring
+
+- [ ] **Sub-Task 1.1.13:** Test with articles from all 7 sources
+- [ ] **Sub-Task 1.1.14:** Verify strategy escalation (HTTP → Playwright → SearXNG)
+- [ ] **Sub-Task 1.1.15:** Test retry logic for failed articles
+- [ ] **Sub-Task 1.1.16:** Set up scheduled execution (every 1 hour)
+- [ ] **Sub-Task 1.1.17:** Monitor scraping success rates by source
+- [ ] **Sub-Task 1.1.18:** Document operational procedures
+
+**Success Criteria:**
+
+- Workflow 2 successfully processes 10-50 articles per run
+- Adaptive scraping strategies working for each source
+- Status transitions tracked in Airtable (needs_scraping → scraped → processed)
+- Failed articles properly queued for retry with error logging
+- Clear visibility into scraping performance by source
+- Integration with Workflow 1 via Airtable status fields
+
+**Expected Outcomes:**
+
+- Complete separation of concerns between RSS fetching and content scraping
+- Resource-efficient processing (only scrape new/updated articles)
+- Resilient to scraping failures (doesn't block RSS pipeline)
+- Flexible execution (manual trigger, scheduled, or sub-workflow)
+
+**📖 Implementation Reference:** See [ADR-001](./docs/architecture-decisions/ADR-001-separated-workflows.md) for detailed node configurations and code snippets.
+
+---
+
+## 📋 Completed Tasks
+
+### ✅ **Creative Phases Complete**
+
+**RSS Post-Processing Architecture (October 25, 2025):**
+
+- ✅ Analyzed 7 different RSS feed formats (ECB, MarketWatch, NASDAQ, BNP Paribas, Finance Monthly, CNBC, Money)
+- ✅ Designed 4-stage normalization pipeline (Merge → Basic Normalizer → Content Processor → Metadata Processor → Validator)
+- ✅ Created comprehensive n8n node configurations
+- ✅ Updated system diagrams and documentation
+- ✅ Documented implementation guidelines and testing approach
+
+**Previous Completion (October 9, 2025):**
 
 - ✅ Complete 4-agent pipeline architecture
 - ✅ All 4 agent prompts (production-ready)
 - ✅ Northern Irish editorial voice (60+ examples)
-- ✅ Complete documentation (~5,600 lines organized)
-- ✅ Documentation organization (20 files, no duplication)
-- ✅ Master index with role-based navigation
-- ✅ Implementation guide + Airtable setup guide
-
-**Ready For:** BUILD MODE - n8n workflow implementation
-
-**Documentation Structure:**
-
-- Root: 3 files (minimal, as requested)
-- docs/: 6 files (implementation guides & reference)
-- memory-bank/: 8 files (architecture & design)
-- prompts/: 4 files (ready for n8n)
+- ✅ Complete documentation organization
+- ✅ Implementation guides and Airtable setup
 
 ---
 
-## 🎯 Active Tasks
+## 🔄 Pipeline Tasks (Updated Architecture)
 
-### ✅ PHASE 1: PLANNING & PROMPTS - COMPLETE
+### **Task 1.2: Multi-Feed Orchestrator** 📊
 
-- [x] **Multi-Agent Workflow Design** ✅ COMPLETE (CREATIVE MODE)
-  - [x] Designed 4-agent pipeline (Desk Reporter → Journalist → Editorial → Copywriter)
-  - [x] Created comprehensive multi-agent architecture document
-  - [x] Defined "Facts First, Character Second" philosophy
-  - [x] Documented all agent roles and responsibilities
-  - [x] Created agent design summary document
-- [x] **System Architecture Refinement** ✅ COMPLETE
-  - [x] Refined workflow for every-other-day digest delivery (48-hour cycle)
-  - [x] Designed complete content scraping flow (RSS → HTTP → Browser fallback)
-  - [x] Created detailed Airtable schema (Articles + Digests tables)
-  - [x] Implemented deduplication strategy (URL hash + title similarity)
-  - [x] Defined pre-filtering logic (relevance >= 4, top 25 articles)
-- [x] **Agent 1: Desk Reporter Prompt** ✅ COMPLETE (IMPLEMENT MODE)
-  - [x] Created complete prompt with n8n variable syntax
-  - [x] Defined relevance scoring guide (1-10 scale, threshold: 4)
-  - [x] Specified model selection logic (llama3.2:3b vs qwen2.5:7b)
-  - [x] Created JSON output schema for Airtable integration
-  - [x] Added quality checklist and validation steps
-  - [x] Document: `/prompts/desk_reporter.md` (305 lines)
-- [x] **Agent 2: Journalist Prompt** ✅ COMPLETE (IMPLEMENT MODE)
-  - [x] Created FACTS FIRST prompt (wire service style)
-  - [x] Defined synthesis requirements (500-700 words)
-  - [x] Specified input format (top 25 articles)
-  - [x] Created article formatting function (n8n)
-  - [x] Added Wikipedia tool integration note
-  - [x] Documented chunking options for future optimization
-  - [x] Document: `/prompts/journalist.md` (424 lines)
-- [x] **Agent 3: Editorial Writer Prompt** ✅ COMPLETE (IMPLEMENT MODE)
-  - [x] Created CHARACTER + FUN prompt with Northern Irish voice
-  - [x] Defined accessibility requirements (Level 3 audience)
-  - [x] Created comprehensive voice guide (60+ examples)
-  - [x] Specified tone adaptation (hybrid approach)
-  - [x] Allowed colorful language and gallows humor
-  - [x] Added "what to watch" section design
-  - [x] Document: `/prompts/editorial.md` (639 lines)
-- [x] **Agent 4: Copywriter Prompt** ✅ COMPLETE (IMPLEMENT MODE)
+**Goal:** Process all 7 feeds with staggered execution  
+**Status:** Pending Task 1.1 completion
 
-  - [x] Created final polish and HTML formatting prompt
-  - [x] Defined email structure (magazine-style)
-  - [x] Specified target length (750-1000 words, 5-6 min read)
-  - [x] Created HTML template with inline styles
-  - [x] Added edgy subject line guide
-  - [x] Added email delivery integration notes
-  - [x] Document: `/prompts/copywriter.md` (471 lines)
-
-- [x] **Session Reflection** ✅ COMPLETE (REFLECT MODE)
-  - [x] Comprehensive reflection on session progress
-  - [x] Lessons learned documented
-  - [x] Design decisions reviewed
-  - [x] Process improvements identified
-  - [x] Readiness assessment completed
-  - [x] Document: `/memory-bank/session-reflection-oct-9.md`
-
-**TOTAL PROMPTS CREATED:** 4 agents, 1,839 lines of documentation  
-**TOTAL DOCUMENTATION:** ~5,300 lines across 13 files
-
----
-
-## 📋 PHASE 2: n8n IMPLEMENTATION - MODULAR BUILD (Next Session)
-
-**Status:** ⏳ Ready to begin  
-**Approach:** Build one module, test it, move to next  
-**Strategy:** No feature creep - stick to 6 defined modules  
-**Documentation:** `/memory-bank/build-implementation-plan.md` + `/docs/build-roadmap.md`
-
----
-
-### 🏗️ MODULE 1: Single Feed Processor (Week 1, Days 1-4)
-
-**Goal:** RSS → Scrape → Desk Reporter → Airtable (Economist ONLY)  
-**Time:** 6-8 hours  
-**Status:** Foundation - must work before proceeding
-
-- [ ] **Sub-Task 1.1:** Create Airtable Articles table (13 minimum fields)
-- [ ] **Sub-Task 1.2:** Build RSS fetch (Economist only)
-- [ ] **Sub-Task 1.3:** Generate URL hash + title normalization
-- [ ] **Sub-Task 1.4:** Implement deduplication check
-- [ ] **Sub-Task 1.5:** Build content scraping (HTTP Request + HTML Extract)
-- [ ] **Sub-Task 1.6:** Integrate Desk Reporter (AI Agent node)
-- [ ] **Sub-Task 1.7:** Store in Airtable (all fields)
-- [ ] **Test:** Process 5 Economist articles, validate Airtable entries
-
-**Success:** ✅ One feed working end-to-end, template ready for duplication
-
----
-
-### 🔄 MODULE 2: Multi-Feed Orchestrator (Week 1, Day 5)
-
-**Goal:** Duplicate Module 1 for all 4 feeds + stagger  
-**Time:** 2-3 hours  
-**Prerequisites:** Module 1 working perfectly
-
-- [ ] Duplicate Module 1 workflow (save as "Feed 2: Bloomberg")
-- [ ] Duplicate Module 1 workflow (save as "Feed 3: Reuters")
-- [ ] Duplicate Module 1 workflow (save as "Feed 4: MarketWatch")
-- [ ] Change RSS URL in each workflow
-- [ ] Create orchestrator workflow (calls all 4 with 1-min delays)
+- [ ] Create orchestrator workflow (calls all 7 feeds with 1-min delays)
 - [ ] Test with live RSS feeds
-- [ ] Validate all 4 feeds populate Airtable
-
-**Success:** ✅ All 4 feeds processing, 30-50 articles per cycle
+- [ ] Validate all 7 feeds populate Airtable
+- [ ] Implement error handling and retry logic
+- [ ] Performance optimization (target <15 min total processing)
 
 ---
 
-### 📰 MODULE 3: Journalist Agent (Week 2, Days 6-7)
+### **Task 2.1: Journalist Agent Pipeline** 📝
 
 **Goal:** Airtable → Journalist → Digests table  
-**Time:** 4-5 hours  
+**Status:** Architecture complete, pending data pipeline
+
 **Prerequisites:** Airtable has 30+ test articles
 
 - [ ] Create Airtable Digests table (Journalist fields)
 - [ ] Build Airtable query (48-hour window, relevance >= 4)
-- [ ] Implement filter + sort logic
-- [ ] Build article formatter (top 25 articles)
-- [ ] Configure Journalist AI Agent node (with Wikipedia tool)
-- [ ] Test synthesis with sample 25-article batch
-- [ ] Validate JSON output
-- [ ] Store in Digests table
-
-**Success:** ✅ Journalist produces coherent factual synthesis
+- [ ] Implement Journalist prompt (facts-first synthesis)
+- [ ] Add Wikipedia integration for fact verification
+- [ ] Generate cohesive 500-700 word factual narrative
+- [ ] Store in Digests table with metadata
+- [ ] **Test:** Process 30 articles into 1 digest
 
 ---
 
-### ✍️ MODULE 4: Editorial Agent (Week 2, Days 8-9)
+### **Task 2.2: Editorial Agent Integration** ✍️
 
-**Goal:** Add Northern Irish voice and perspective  
-**Time:** 3-4 hours  
-**Prerequisites:** Module 3 working, sample Journalist output
+**Goal:** Add Northern Irish voice and personality  
+**Status:** Prompts complete, integration pending
 
-- [ ] Build Editorial AI Agent node
-- [ ] Test with sample Journalist JSON
-- [ ] Validate Northern Irish voice present
-- [ ] Check tone adaptation to market mood
-- [ ] Verify colorful language appropriately used
-- [ ] Update Digests table with Editorial fields
-- [ ] Test multiple market moods (bullish, bearish, uncertain)
-
-**Success:** ✅ Editorial adds CHARACTER and is fun to read
+- [ ] Load Editorial prompt and voice examples
+- [ ] Integration with Journalist output
+- [ ] Generate engaging 750-word editorial
+- [ ] Maintain factual base while adding personality
+- [ ] Quality assurance (voice consistency)
+- [ ] **Test:** 5 editorials, voice validation
 
 ---
 
-### 📧 MODULE 5: Copywriter Agent (Week 2, Day 10)
+### **Task 2.3: Copywriter Agent & Email** 📧
 
-**Goal:** Format to HTML and send email  
-**Time:** 3-4 hours  
-**Prerequisites:** Module 4 working, sample Editorial output
+**Goal:** HTML email formatting and delivery  
+**Status:** Prompts complete, email integration pending
 
-- [ ] Build Copywriter AI Agent node
-- [ ] Test HTML generation
-- [ ] Validate subject line is edgy (under 60 chars)
-- [ ] Check HTML renders properly (validate code)
-- [ ] Configure Send Email node
-- [ ] Send test email to yourself
-- [ ] Test rendering in Gmail, Outlook, Apple Mail
-- [ ] Update Digests table with email fields
-
-**Success:** ✅ Beautiful HTML email delivered successfully
+- [ ] Implement Copywriter prompt
+- [ ] HTML email template creation
+- [ ] Subject line generation (edgy, engaging)
+- [ ] Email delivery configuration
+- [ ] Unsubscribe and preferences
+- [ ] **Test:** End-to-end email delivery
 
 ---
 
-### 🎭 MODULE 6: Digest Orchestrator (Week 3, Days 11-12)
+## 🏗️ System Integration Tasks
 
-**Goal:** Chain all agents with schedule  
-**Time:** 2-3 hours  
-**Prerequisites:** Modules 3, 4, 5 all working
+### **Task 3.1: End-to-End Testing** 🧪
 
-- [ ] Create digest orchestrator workflow
-- [ ] Configure schedule trigger (6AM every other day)
-- [ ] Chain Journalist → Editorial → Copywriter
-- [ ] Test with manual trigger first
-- [ ] Run complete 48-hour simulation
-- [ ] Validate end-to-end processing time (<20 min)
-- [ ] Mark digest as "sent" in Airtable
+**Goal:** Complete 48-hour cycle validation
 
-**Success:** ✅ Automated digest generation working
+- [ ] Full pipeline testing (RSS → Email)
+- [ ] Performance monitoring and optimization
+- [ ] Error handling validation
+- [ ] Data quality assurance
+- [ ] **Test:** Complete 2-day cycle simulation
 
 ---
 
-### 🧪 TESTING & GO-LIVE (Week 3, Days 13-15)
+### **Task 3.2: Production Deployment** 🚀
 
-- [ ] Run 2-3 complete digest cycles with real data
-- [ ] Monitor all modules for errors
-- [ ] Refine prompts based on actual outputs
-- [ ] Optimize performance if needed
-- [ ] Set production schedule
-- [ ] Send first real digest
-- [ ] Monitor and adjust
+**Goal:** Live system deployment
 
-**Success:** ✅ FineOpinions is LIVE! 🎉
+- [ ] Production environment setup
+- [ ] Monitoring and alerting
+- [ ] Backup and recovery procedures
+- [ ] Documentation finalization
+- [ ] Go-live checklist
 
 ---
 
-## 🎨 Creative Mode Tasks (Flagged)
+## 📊 Task Summary Statistics
 
-### 1. Prompt Engineering (High Priority)
+**Total Tasks:** 15  
+**Completed:** 2 ✅  
+**In Progress:** 1 🟡  
+**Pending:** 12 ⏳
 
-**Component**: AI Agent article analysis  
-**Status**: Awaiting CREATIVE mode  
-**Complexity**: Medium-High
-
-**Design Decisions Needed**:
-
-- Exact prompt structure and formatting (SYSTEM + USER)
-- JSON output schema with validation
-- Model-specific optimizations (llama3.2:3b vs qwen2.5:7b)
-- Few-shot examples for consistency
-- Relevance scoring criteria and weights
-- Tag/topic taxonomy design
-
-### 2. Content Extraction Strategy (Medium Priority)
-
-**Component**: HTML parsing and scraping  
-**Status**: Awaiting CREATIVE mode  
-**Complexity**: Medium
-
-**Design Decisions Needed**:
-
-- Site-specific extraction rules (per source)
-- Content identification heuristics
-- Fallback strategy hierarchy
-- Content quality validation metrics
-- Metadata extraction patterns
-
-### 3. Relevance Scoring Algorithm (Medium Priority)
-
-**Component**: AI-based article filtering  
-**Status**: Can be addressed in Prompt Engineering  
-**Complexity**: Medium
-
-**Design Decisions Needed**:
-
-- Scoring criteria (1-10 scale definition)
-- Topic classification system
-- Threshold optimization (currently >= 5)
-- Edge case handling
+**Current Focus:** RSS Post-Processing Implementation  
+**Next Milestone:** Single feed end-to-end validation  
+**Target Completion:** End-to-end system by November 2025
 
 ---
 
-## 🚀 Future Features
+**Documentation References:**
 
-### Deferred to Future Releases
-
-- [ ] **Daily Digest Agent Implementation**
-
-  - Aggregate articles into coherent daily summaries
-  - Identify trends and connections
-  - Output format: 3-5 minute read
-
-- [ ] **Weekly Report Agent Implementation**
-
-  - Analyze 7 days of daily digests
-  - Identify recurring themes and patterns
-  - Generate analytical weekly report
-  - Email delivery
-
-- [ ] **Data Retention Automation**
-
-  - Purge raw articles after 30 days
-  - Archive old records after 90 days
-  - Maintain digests for 1 year
-
-- [ ] **Social Media Monitoring** (Explicitly deferred)
-
-  - Twitter/X feed monitoring
-  - LinkedIn financial news tracking
-  - Social sentiment analysis
-
-- [ ] **Advanced Analytics**
-
-  - Trend analysis across multiple weeks
-  - Custom alert generation
-  - Interactive dashboard
-
-- [ ] **Enhanced Sources**
-
-  - Additional RSS feed integration
-  - Podcast transcript analysis
-  - Video content analysis
-
-- [ ] **Multi-user Support**
-  - Customizable report preferences
-  - Multiple delivery schedules
-  - User-specific feed curation
-
----
-
-## ✅ Completed Tasks
-
-### October 9, 2025
-
-- [x] RSS Feed Retrieval Architecture Planning
-  - Created comprehensive planning document (memory-bank/rss-feed-architecture.md)
-  - Designed 5 detailed component diagrams (Mermaid)
-  - Defined Airtable schema for Articles table
-  - Identified creative phase components
-  - Documented challenges and mitigations
-  - Created implementation checklist
-  - Defined success metrics
-
-### October 8, 2025
-
-- [x] Initial project brief creation
-- [x] VAN mode complexity assessment (Level 4)
-- [x] Memory Bank folder structure created
-- [x] tasks.md initialization
-- [x] Complete Memory Bank setup (all 6 files created):
-  - projectbrief.md
-  - productContext.md
-  - systemPatterns.md
-  - techContext.md
-  - activeContext.md
-  - progress.md
-
----
-
-## 🔄 Task Management Notes
-
-- **Current Complexity Level:** Level 4 (Complex System)
-- **Priority Levels:** High / Medium / Low
-- **Blocking Issues:** None currently
-- **Next Mode:** CREATIVE MODE (Prompt Engineering)
-- **Dependencies:**
-  - Phase 2 (Scraping) depends on Content Extraction Strategy (CREATIVE)
-  - Phase 3 (AI Agent) depends on Prompt Engineering (CREATIVE)
-  - Phases 4-5 depend on completion of Phases 1-3
-- **Review Frequency:** Update after each significant progress milestone
-
----
-
-## 📊 Mode Transition Plan
-
-```
-Current: PLAN MODE ✅ Complete
-    ↓
-Next: CREATIVE MODE 🎨
-    - Task 1: Prompt Engineering (AI Agent)
-    - Task 2: Content Extraction Strategy
-    ↓
-Then: BUILD MODE 🔨
-    - Phase 1: RSS Retrieval & Basic Storage
-    - Phase 2: Content Scraping Implementation
-    - Phase 3: AI Agent Integration
-    - Phase 4: Full Pipeline Integration
-    ↓
-Finally: QA MODE ✅
-    - Phase 5: Monitoring & Refinement
-```
-
----
-
-**Last Planning Session:** October 9, 2025  
-**Planning Document:** `/memory-bank/rss-feed-architecture.md`  
-**Diagrams Created:** 7 comprehensive Mermaid diagrams  
-**Components Identified:** 5 major components  
-**Creative Tasks Flagged:** 3 tasks
+- **Architecture:** `/fineopinions_diagram.md`
+- **Node Settings:** `/fineopinions_node_settings.md`
+- **Implementation:** `/docs/implementation-guide.md`
+- **Database Setup:** `/docs/airtable-setup.md`

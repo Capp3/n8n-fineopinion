@@ -1,117 +1,120 @@
-# BUILD Mode Implementation Plan - CREATIVE PHASE
+# Build Implementation Plan
 
-**Created:** October 9, 2025  
-**Mode:** CREATIVE (Planning BUILD Implementation)  
-**Approach:** Modular, Small Steps, No Feature Creep  
-**Philosophy:** Build one workflow, test it, duplicate it, repeat
-
----
-
-## 🎯 Core Implementation Strategy
-
-### The Modular Approach
-
-**Build in small, testable modules:**
-
-1. ✅ One workflow at a time
-2. ✅ Test thoroughly before moving on
-3. ✅ Duplicate and adapt (not rebuild)
-4. ✅ Each module is self-contained
-5. ✅ No feature creep - stick to the plan
-
-**Benefits:**
-
-- Easier to debug (small, focused workflows)
-- Faster validation (test one thing at a time)
-- Less overwhelming (incremental progress)
-- Reusable (duplicate working workflows)
+**Last Updated:** October 25, 2025  
+**Status:** Updated for RSS Post-Processing Architecture  
+**Phase:** Implementation Mode
 
 ---
 
-## 📦 Module Breakdown
+## 🎯 Current Implementation Priority
 
-### MODULE 1: Single Feed Processor (FOUNDATION)
+### Module 0: RSS Post-Processing Pipeline (NEW - Priority 1)
 
-**Goal:** RSS → Scrape → Airtable for ONE feed  
-**Time:** 6-8 hours  
-**Complexity:** Medium
+**Goal:** Normalize 7 different RSS feed formats into consistent schema
+
+**Architecture:**
 
 ```mermaid
 graph LR
-    A[RSS Read:<br/>Economist] --> B[Dedup Check]
-    B --> C[Scrape Content]
-    C --> D[Desk Reporter]
-    D --> E[Validate JSON]
-    E --> F[Store Airtable]
-
-    style A fill:#4da6ff,stroke:#0066cc,color:white
-    style D fill:#ffd700,stroke:#daa520,color:black
-    style F fill:#4dbb5f,stroke:#36873f,color:white
+    A[7 RSS Feeds:<br/>ECB, MarketWatch, NASDAQ<br/>BNP, FinanceMonthly, CNBC, Money] --> B[Merge Node]
+    B --> C[4-Stage Normalization<br/>Pipeline]
+    C --> D[Validated Data<br/>Ready for Processing]
 ```
 
 **What it does:**
 
-1. Reads RSS feed (Economist only)
-2. Checks if article already exists (URL hash)
-3. Scrapes full article content (HTTP Request)
-4. Processes through Desk Reporter (AI Agent)
-5. Validates JSON output
-6. Stores in Airtable Articles table
+1. Reads 7 RSS feeds simultaneously
+2. Merges all feed data
+3. Normalizes different field formats (content vs content:encoded, etc.)
+4. Cleans HTML and extracts snippets
+5. Processes metadata (creator, categories)
+6. Validates and maps to Airtable schema
 
 **Success criteria:**
 
-- ✅ Can fetch Economist RSS
-- ✅ Deduplication works (skips existing articles)
-- ✅ Scraping retrieves full text (>100 chars)
-- ✅ Desk Reporter returns valid JSON
-- ✅ Article stored in Airtable with all fields
+- ✅ All 7 RSS feeds process without errors
+- ✅ Field normalization handles format variations
+- ✅ Content cleaning preserves essential text
+- ✅ Validation catches and reports errors
+- ✅ Output matches Airtable Articles schema
 
-**Test with:** 5 Economist articles (varied topics)
+**Test with:** Sample data from all 7 RSS sources
 
 ---
 
-### MODULE 2: Multi-Feed Orchestrator (EXPANSION)
+### Module 1: Single Feed Processor (Updated for Post-Processing)
 
-**Goal:** Run Module 1 for all 4 feeds with stagger  
-**Time:** 2-3 hours  
-**Complexity:** Low
+**Goal:** Complete end-to-end processing for one source through the entire pipeline
+
+**Architecture:**
+
+```mermaid
+graph LR
+    A[RSS + Post-Processing<br/>(Any Source)] --> B[Dedup Check]
+    B --> C[Scrape Content]
+    C --> D[Desk Reporter]
+    D --> E[Store in Airtable]
+```
+
+**What it does:**
+
+1. Uses RSS post-processing output (any source)
+2. Checks if article already exists (URL hash)
+3. Scrapes full article content (HTTP Request)
+4. Processes through Desk Reporter (AI agent)
+5. Stores complete analysis in Airtable
+
+**Success criteria:**
+
+- ✅ Can process any of the 7 RSS sources
+- ✅ Deduplication works (skips existing articles)
+- ✅ Scraping retrieves full text (>100 chars)
+- ✅ AI analysis returns valid JSON
+- ✅ Article stored in Airtable with all fields
+
+**Test with:** 5 articles from different sources (varied topics)
+
+---
+
+### Module 2: Multi-Feed Orchestrator (Updated)
+
+**Goal:** Process all 7 feeds in parallel with staggered execution
+
+**Architecture:**
 
 ```mermaid
 graph TB
-    TRIGGER[Schedule Trigger<br/>7AM or 7PM] --> FEED1[Feed 1: Economist<br/>MODULE 1]
+    TRIGGER[Schedule Trigger<br/>7AM or 7PM] --> FEED1[Feed 1: ECB<br/>MODULE 1]
     TRIGGER --> WAIT1[Wait 1 min]
-    WAIT1 --> FEED2[Feed 2: Bloomberg<br/>MODULE 1]
+    WAIT1 --> FEED2[Feed 2: MarketWatch<br/>MODULE 1]
     WAIT1 --> WAIT2[Wait 2 min]
-    WAIT2 --> FEED3[Feed 3: Reuters<br/>MODULE 1]
+    WAIT2 --> FEED3[Feed 3: NASDAQ<br/>MODULE 1]
     WAIT2 --> WAIT3[Wait 3 min]
-    WAIT3 --> FEED4[Feed 4: MarketWatch<br/>MODULE 1]
-
-    style TRIGGER fill:#4da6ff,stroke:#0066cc,color:white
+    WAIT3 --> FEED4[Feed 4: BNP Paribas<br/>MODULE 1]
+    WAIT3 --> WAIT4[Wait 4 min]
+    WAIT4 --> FEED5[Feed 5: Finance Monthly<br/>MODULE 1]
+    WAIT4 --> WAIT5[Wait 5 min]
+    WAIT5 --> FEED6[Feed 6: CNBC<br/>MODULE 1]
+    WAIT5 --> WAIT6[Wait 6 min]
+    WAIT6 --> FEED7[Feed 7: Money<br/>MODULE 1]
 ```
 
 **What it does:**
 
 1. Schedule trigger fires (7AM or 7PM)
-2. Calls Feed 1 workflow (Economist)
+2. Calls Feed 1 workflow (ECB)
 3. Waits 1 minute
-4. Calls Feed 2 workflow (Bloomberg)
-5. Waits 1 minute
-6. Calls Feed 3 workflow (Reuters)
-7. Waits 1 minute
-8. Calls Feed 4 workflow (MarketWatch)
-
-**Implementation:**
-
-- Duplicate Module 1 workflow 4 times
-- Change RSS URL for each
-- Main orchestrator calls sub-workflows with stagger
+4. Calls Feed 2 workflow (MarketWatch)
+5. Continues for all 7 feeds with staggered timing
+6. Each feed uses Module 1 processing
 
 **Success criteria:**
 
-- ✅ All 4 feeds process successfully
-- ✅ Staggered execution (1-min delays)
+- ✅ All 7 feeds process successfully
 - ✅ No rate limiting issues
 - ✅ All articles stored in Airtable
+- ✅ Processing completes within 15 minutes
+- ✅ Error handling works for failed feeds
 
 **Test with:** Live RSS feeds, one complete run
 

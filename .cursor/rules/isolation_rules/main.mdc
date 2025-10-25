@@ -1,9 +1,3 @@
----
-description: main rule
-globs: main.mdc
-alwaysApply: false
----
-
 # 🔍 ISOLATION-FOCUSED MEMORY BANK SYSTEM
 
 > **TL;DR:** This system is designed to work with Cursor custom modes, where each mode loads only the rules it needs. The system uses visual Mermaid diagrams and selective document loading to optimize context usage.
@@ -19,7 +13,7 @@ graph TD
         Implement --> Reflect["REFLECT MODE<br>Task Review"]
         Reflect --> Archive["ARCHIVE MODE<br>Documentation"]
     end
-    
+
     VAN -.->|"Loads"| VANRules["• main.md<br>• platform-awareness.md<br>• file-verification.md<br>• workflow-init.md"]
     PLAN -.->|"Loads"| PLANRules["• main.md<br>• task-tracking.md<br>• planning-process.md"]
     Creative -.->|"Loads"| CreativeRules["• main.md<br>• creative-phase.md<br>• design-patterns.md"]
@@ -51,27 +45,27 @@ graph TD
         creative["creative-*.md<br>Design Decisions"]
         progress["progress.md<br>Implementation Status"]
     end
-    
+
     VAN["VAN MODE"] -->|"Creates/Updates"| tasks
     VAN -->|"Creates/Updates"| active
-    
+
     PLAN["PLAN MODE"] -->|"Reads"| tasks
     PLAN -->|"Reads"| active
     PLAN -->|"Updates"| tasks
-    
+
     Creative["CREATIVE MODE"] -->|"Reads"| tasks
     Creative -->|"Creates"| creative
     Creative -->|"Updates"| tasks
-    
+
     Implement["IMPLEMENT MODE"] -->|"Reads"| tasks
     Implement -->|"Reads"| creative
     Implement -->|"Updates"| tasks
     Implement -->|"Updates"| progress
-    
+
     Reflect["REFLECT MODE"] -->|"Reads"| tasks
     Reflect -->|"Reads"| progress
     Reflect -->|"Updates"| tasks
-    
+
     Archive["ARCHIVE MODE"] -->|"Reads"| tasks
     Archive -->|"Reads"| progress
     Archive -->|"Archives"| creative
@@ -84,13 +78,13 @@ sequenceDiagram
     participant User
     participant CurrentMode
     participant NextMode
-    
+
     CurrentMode->>CurrentMode: Complete Phase Requirements
     CurrentMode->>User: "Phase complete. NEXT MODE: [mode name]"
     User->>CurrentMode: End Current Mode
     User->>NextMode: Start Next Mode
     NextMode->>NextMode: Verify Required File State
-    
+
     alt File State Valid
         NextMode->>User: "Continuing from previous mode..."
     else File State Invalid
@@ -101,13 +95,13 @@ sequenceDiagram
 
 ## 💻 PLATFORM-SPECIFIC COMMANDS
 
-| Action | Windows | Mac/Linux |
-|--------|---------|-----------|
-| Create file | `echo. > file.ext` | `touch file.ext` |
-| Create directory | `mkdir directory` | `mkdir -p directory` |
-| Change directory | `cd directory` | `cd directory` |
-| List files | `dir` | `ls` |
-| Show file content | `type file.ext` | `cat file.ext` |
+| Action            | Windows            | Mac/Linux            |
+| ----------------- | ------------------ | -------------------- |
+| Create file       | `echo. > file.ext` | `touch file.ext`     |
+| Create directory  | `mkdir directory`  | `mkdir -p directory` |
+| Change directory  | `cd directory`     | `cd directory`       |
+| List files        | `dir`              | `ls`                 |
+| Show file content | `type file.ext`    | `cat file.ext`       |
 
 ## ⚠️ COMMAND EFFICIENCY GUIDANCE
 
@@ -120,4 +114,11 @@ grep "TODO" $(find . -name "*.js")
 npm install && npm start
 ```
 
-Refer to [command-execution.md](mdc:Core/command-execution.md) for detailed guidance. 
+Refer to [command-execution.md](mdc:Core/command-execution.md) for detailed guidance.
+grep "TODO" $(find . -name "\*.js")
+npm install && npm start
+
+```
+
+Refer to [command-execution.md](mdc:Core/command-execution.md) for detailed guidance.
+```

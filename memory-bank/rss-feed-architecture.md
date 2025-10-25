@@ -1,47 +1,52 @@
-# RSS Feed Retrieval Architecture - Planning Document
+# RSS Feed Architecture - FineOpinions
 
-**Created:** October 9, 2025  
-**Mode:** PLAN  
-**Complexity:** Level 4  
-**Status:** Planning Phase
+**Last Updated:** October 25, 2025  
+**Status:** RSS Post-Processing Architecture Complete ✅  
+**Related:** `/fineopinions_diagram.md`, `/fineopinions_node_settings.md`
 
 ---
 
 ## 📋 Overview
 
-This document outlines the comprehensive architecture for the RSS feed retrieval and processing system for FineOpinions. The system follows a multi-stage pipeline: RSS XML retrieval → Article URL iteration → Content scraping → AI agent processing → Data storage.
+This document outlines the comprehensive architecture for the RSS feed retrieval and processing system for FineOpinions. The system follows a multi-stage pipeline: RSS XML retrieval → RSS Post-Processing → Article URL iteration → Content scraping → AI agent processing → Data storage.
 
 ---
 
-## 🎯 System Architecture - High Level
+## 🎯 High-Level System Flow
 
 ```mermaid
 graph TB
     %% Main Entry Point
     START[⏰ Scheduled Trigger<br/>2x Daily: 7AM & 7PM] --> ORCHESTRATOR[🎭 Feed Orchestrator<br/>Staggered Execution]
 
-    %% Feed Processing
-    ORCHESTRATOR -->|T+0min| FEED1[📰 Economist Feed]
-    ORCHESTRATOR -->|T+1min| FEED2[📰 Bloomberg Feed]
-    ORCHESTRATOR -->|T+2min| FEED3[📰 Reuters Feed]
-    ORCHESTRATOR -->|T+3min| FEED4[📰 MarketWatch Feed]
+    %% Feed Processing (Updated with Actual 7 Feeds)
+    ORCHESTRATOR -->|T+0min| FEED1[📰 ECB Feed]
+    ORCHESTRATOR -->|T+1min| FEED2[📰 MarketWatch Feed]
+    ORCHESTRATOR -->|T+2min| FEED3[📰 NASDAQ Feed]
+    ORCHESTRATOR -->|T+3min| FEED4[📰 BNP Paribas Feed]
+    ORCHESTRATOR -->|T+4min| FEED5[📰 Finance Monthly Feed]
+    ORCHESTRATOR -->|T+5min| FEED6[📰 CNBC Feed]
+    ORCHESTRATOR -->|T+6min| FEED7[📰 Money Feed]
 
-    %% Merge Point
-    FEED1 & FEED2 & FEED3 & FEED4 --> MERGE[🔄 Merge Articles]
-
-    %% Deduplication
-    MERGE --> DEDUP[🔍 Deduplication Check<br/>Against Database]
+    %% RSS Post-Processing Pipeline (NEW)
+    FEED1 & FEED2 & FEED3 & FEED4 & FEED5 & FEED6 & FEED7 --> MERGE[🔄 Merge Articles]
+    MERGE --> NORMALIZE[🔧 Basic Field Normalizer]
+    NORMALIZE --> CONTENTPROC[📄 Content Processor]
+    CONTENTPROC --> METADATA[🏷️ Metadata Processor]
+    METADATA --> VALIDATE[✅ Field Validator & Mapper]
 
     %% Processing Pipeline
+    VALIDATE --> DEDUP[🔍 Deduplication Check<br/>Against Database]
     DEDUP --> LOOP[🔁 Loop Each Article URL]
     LOOP --> SCRAPE[🌐 Content Scraper Module]
-    SCRAPE --> VALIDATE[✅ Content Validation]
-    VALIDATE --> AGENT[🤖 AI Agent Review]
+    SCRAPE --> AIVALIDATE[✅ Content Validation]
+    AIVALIDATE --> AGENT[🤖 AI Agent Review]
     AGENT --> STORE[💾 Airtable Ingest]
 
     %% Error Handling
     SCRAPE -.->|Scraping Failed| ERROR[⚠️ Error Handler]
-    VALIDATE -.->|Invalid Content| ERROR
+    AIVALIDATE -.->|Invalid Content| ERROR
+    NORMALIZE -.->|Format Error| ERROR
     ERROR --> RETRY{Retry?}
     RETRY -->|Yes, < 3 attempts| SCRAPE
     RETRY -->|No, Log & Continue| STORE
@@ -51,7 +56,8 @@ graph TB
 
     style START fill:#4da6ff,stroke:#0066cc,color:white
     style ORCHESTRATOR fill:#ffa64d,stroke:#cc7a30,color:white
-    style AGENT fill:#d971ff,stroke:#a33bc2,color:white
+    style NORMALIZE fill:#d971ff,stroke:#a33bc2,color:white
+    style AGENT fill:#ffa64d,stroke:#cc7a30,color:white
     style STORE fill:#4dbb5f,stroke:#36873f,color:white
     style ERROR fill:#ff5555,stroke:#cc0000,color:white
 ```

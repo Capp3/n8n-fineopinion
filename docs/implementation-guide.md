@@ -1,39 +1,76 @@
-# FineOpinions Implementation Guide
+# Implementation Guide - FineOpinions
 
-**Last Updated:** October 9, 2025  
-**Status:** Ready for BUILD MODE  
-**Read Time:** 15 minutes  
-**Purpose:** Everything you need to start building
-
----
-
-## 🎯 What is FineOpinions?
-
-An automated financial news digest delivered **every other day** (48-hour cycle) featuring:
-
-- **Trustworthy facts** (wire service journalism standards)
-- **Actual personality** (Northern Irish wit, edgy humor)
-- **Accessible language** (for intelligent non-experts)
-- **5-6 minute read** (750-1000 words, HTML email)
-
-**Voice:** The Economist meets your smartest, funniest mate from Belfast explaining economics over pints. 🍺
+**Last Updated:** October 25, 2025  
+**Status:** Updated for RSS Post-Processing Architecture  
+**Phase:** Implementation Mode
 
 ---
 
-## 🏗️ System Architecture
+## 🎯 Current Implementation Status
 
-### The 4-Agent Pipeline
+**Current Phase:** RSS Post-Processing Pipeline Implementation  
+**Next:** Full workflow integration with AI agents  
+**Architecture:** 7 RSS feeds → Post-processing → Content scraping → AI analysis → Airtable
 
+---
+
+## 📋 Implementation Roadmap
+
+### Phase 1: RSS Post-Processing Pipeline ✅ (Design Complete)
+
+- **Status:** Creative phase complete, ready for implementation
+- **Components:** 4-stage normalization pipeline
+- **RSS Sources:** 7 feeds (ECB, MarketWatch, NASDAQ, BNP Paribas, Finance Monthly, CNBC, Money)
+- **Output:** Normalized data ready for content scraping
+
+### Phase 2: Content Processing & AI Integration (Next)
+
+- **Status:** Pending Phase 1 completion
+- **Components:** HTTP scraping → AI analysis → Airtable storage
+- **Focus:** Single feed end-to-end validation
+
+### Phase 3: Multi-Agent Pipeline (Future)
+
+- **Status:** Architecture complete, awaiting Phases 1-2
+- **Components:** Journalist → Editorial → Copywriter → Email delivery
+- **Focus:** Daily digest generation
+
+---
+
+## 🛠️ Technical Stack
+
+### Infrastructure
+
+- **n8n:** v1.114.4 (self-hosted workflow automation)
+- **LLM:** Ollama (local inference)
+  - llama3.2:3b (fast processing)
+  - qwen2.5:7b (quality synthesis)
+- **Database:** Airtable (2 tables, 40+ fields)
+- **Email:** n8n Send Email Node (HTML)
+- **RSS Sources:** ECB, MarketWatch, NASDAQ, BNP Paribas, Finance Monthly, CNBC, Money
+
+---
+
+## 🔄 RSS Post-Processing Architecture
+
+### Processing Pipeline (NEW)
+
+```mermaid
+graph TD
+    RSS[7 RSS Feeds] --> MERGE[Merge Node]
+    MERGE --> STAGE1[Basic Normalizer]
+    STAGE1 --> STAGE2[Content Processor]
+    STAGE2 --> STAGE3[Metadata Processor]
+    STAGE3 --> STAGE4[Validator & Mapper]
+    STAGE4 --> OUTPUT[Airtable Ready Data]
 ```
-Day 1-2: RSS (4 feeds, 7AM+7PM) → Scraper → Desk Reporter → Airtable
-                                                              ↓
-Day 3, 6AM: Query Airtable → Journalist → Editorial → Copywriter → Email
-```
 
-**Agent 1: Desk Reporter** - Extracts facts, scores relevance (threshold: >=4)  
-**Agent 2: Journalist** - FACTS FIRST synthesis (NO opinion), Wikipedia tool  
-**Agent 3: Editorial** - Northern Irish voice, CHARACTER & FUN  
-**Agent 4: Copywriter** - HTML formatting, magazine-style, edgy subject lines
+### Stage Details
+
+1. **Basic Normalizer:** Core fields, dates, source detection
+2. **Content Processor:** HTML cleaning, snippet extraction
+3. **Metadata Processor:** Creator fields, categories
+4. **Validator & Mapper:** Airtable schema compliance
 
 ---
 
@@ -49,18 +86,6 @@ Day 3, 6AM: Query Airtable → Journalist → Editorial → Copywriter → Email
 - Factual integrity (trust the facts)
 - Editorial freedom (enjoy the perspective)
 - Clear boundaries (readers know what's what)
-
----
-
-## 🛠️ Technical Stack
-
-- **n8n:** v1.114.4 (self-hosted workflow automation)
-- **LLM:** Ollama (local)
-  - llama3.2:3b (fast, <1000 words)
-  - qwen2.5:7b (quality, >=1000 words, synthesis)
-- **Database:** Airtable (2 tables, 40+ fields)
-- **Email:** n8n Send Email Node (HTML)
-- **RSS Sources:** Economist, Bloomberg, Reuters, MarketWatch
 
 ---
 

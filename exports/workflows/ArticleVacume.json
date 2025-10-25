@@ -1,0 +1,841 @@
+{
+  "name": "Article Vacume",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -480,
+        48
+      ],
+      "id": "8a5fe6f9-579a-40c2-a1af-70647adda94e",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -256,
+        48
+      ],
+      "id": "b9e3df2b-a2c3-42ac-abd6-ff704aa93e8a",
+      "name": "No Operation, do nothing"
+    },
+    {
+      "parameters": {
+        "url": "https://www.ecb.europa.eu/rss/press.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -528
+      ],
+      "id": "28c353db-f88a-4fbf-acf8-f0f6a6c74af7",
+      "name": "EU Central Bank",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.marketwatch.com/rss/topstories",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -336
+      ],
+      "id": "0454dd68-ca8f-48b7-8884-cc04b0e6bb5a",
+      "name": "Market Watch",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.nasdaq.com/feed/nasdaq-original/rss.xml",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        -144
+      ],
+      "id": "dedd16f2-b8e5-4978-adbb-43103f51aa2f",
+      "name": "Nasdaq",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://economic-research.bnpparibas.com/RSS/en-US/Eco-Insight",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        48
+      ],
+      "id": "74327cb9-1645-4207-8b61-c033459325f8",
+      "name": "bnp",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.finance-monthly.com/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        240
+      ],
+      "id": "bfddbd7c-9f18-485e-a3f9-2d74f5a6358f",
+      "name": "Finance Monthly",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://www.cnbc.com/id/15839135/device/rss/rss.html",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        432
+      ],
+      "id": "6cf20ebc-e58d-4ccc-94d5-2dcbdd251025",
+      "name": "CNBC",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "url": "https://money.com/money/feed",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.rssFeedRead",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        624
+      ],
+      "id": "db21bd3f-722b-4d7d-ac85-a210ee45ee87",
+      "name": "Money",
+      "notesInFlow": false,
+      "retryOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "numberInputs": 7
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        176,
+        -32
+      ],
+      "id": "b4070911-4b94-41d7-aaa6-b88f1e7a08c3",
+      "name": "Merge RSS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Stage 1: Basic Field Normalization\nfunction normalizeBasicFields(item) {\n  // Extract source from URL (using string matching instead of URL constructor)\n  function extractSourceFromLink(link) {\n    if (!link) return \"unknown\";\n    const linkLower = link.toLowerCase();\n\n    if (linkLower.includes(\"ecb.europa.eu\")) return \"ecb\";\n    if (linkLower.includes(\"marketwatch.com\")) return \"marketwatch\";\n    if (linkLower.includes(\"nasdaq.com\")) return \"nasdaq\";\n    if (linkLower.includes(\"bnpparibas.com\")) return \"bnpparibas\";\n    if (linkLower.includes(\"finance-monthly.com\")) return \"financemonthly\";\n    if (linkLower.includes(\"cnbc.com\")) return \"cnbc\";\n    if (linkLower.includes(\"money.com\")) return \"money\";\n\n    return \"unknown\";\n  }\n\n  // Normalize GUID\n  function normalizeGuid(guid) {\n    if (!guid) return Date.now().toString();\n    return String(guid);\n  }\n\n  // Normalize dates\n  function normalizeDates(item) {\n    const pubDate = item.pubDate || item.isoDate;\n    const isoDate =\n      item.isoDate ||\n      (pubDate ? new Date(pubDate).toISOString() : new Date().toISOString());\n\n    return { pubDate, isoDate };\n  }\n\n  const dates = normalizeDates(item);\n\n  return {\n    title: item.title || \"\",\n    link: item.link || \"\",\n    pubDate: dates.pubDate,\n    isoDate: dates.isoDate,\n    guid: normalizeGuid(item.guid),\n    source: item.source || extractSourceFromLink(item.link),\n    // Preserve original data\n    originalData: item,\n  };\n}\n\n// Process all items\nconst normalizedItems = [];\nfor (const item of $input.all()) {\n  const normalized = normalizeBasicFields(item.json);\n  normalizedItems.push(normalized);\n}\n\nreturn normalizedItems.map((item) => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        352,
+        48
+      ],
+      "id": "16ac89bc-5e74-483b-bdd6-87ff7c4e39e8",
+      "name": "Normalize RSS"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Stage 2: Content Processing\nfunction processContent(item) {\n  // Clean HTML content\n  function cleanHtmlContent(content) {\n    if (!content) return \"\";\n\n    // Remove HTML tags but preserve text\n    let cleaned = content.replace(/<[^>]*>/g, \" \");\n\n    // Decode HTML entities\n    cleaned = cleaned\n      .replace(/&nbsp;/g, \" \")\n      .replace(/&amp;/g, \"&\")\n      .replace(/&lt;/g, \"<\")\n      .replace(/&gt;/g, \">\")\n      .replace(/&quot;/g, '\"')\n      .replace(/&#39;/g, \"'\");\n\n    // Clean up whitespace\n    cleaned = cleaned.replace(/\\s+/g, \" \").trim();\n\n    return cleaned;\n  }\n\n  // Extract snippet from content\n  function extractSnippet(content, maxLength = 300) {\n    if (!content) return \"\";\n\n    const cleaned = cleanHtmlContent(content);\n    if (cleaned.length <= maxLength) return cleaned;\n\n    // Find last complete sentence within limit\n    const truncated = cleaned.substring(0, maxLength);\n    const lastSentence = truncated.lastIndexOf(\". \");\n\n    if (lastSentence > maxLength * 0.7) {\n      return truncated.substring(0, lastSentence + 1);\n    }\n\n    return truncated + \"...\";\n  }\n\n  // Get content from various fields\n  const originalData = item.originalData || {};\n  const content =\n    originalData[\"content:encoded\"] ||\n    originalData.content ||\n    originalData.contentSnippet ||\n    \"\";\n  const snippet =\n    originalData[\"content:encodedSnippet\"] ||\n    originalData.contentSnippet ||\n    extractSnippet(content);\n\n  return {\n    ...item,\n    content: cleanHtmlContent(content),\n    contentSnippet: cleanHtmlContent(snippet),\n    contentLength: content.length,\n    hasLongContent: content.length > 1000,\n  };\n}\n\n// Process all items\nconst processedItems = [];\nfor (const item of $input.all()) {\n  const processed = processContent(item.json);\n  processedItems.push(processed);\n}\n\nreturn processedItems.map((item) => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        48
+      ],
+      "id": "eecbed0c-eb65-4d24-9952-3961c57c9bfa",
+      "name": "Content Processor"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Stage 3: Metadata Processing\nfunction processMetadata(item) {\n  const originalData = item.originalData || {};\n\n  // Process creator field\n  function getCreator(data) {\n    return data.creator || data[\"dc:creator\"] || \"Unknown\";\n  }\n\n  // Process categories\n  function getCategories(data) {\n    const categories = data.categories || [];\n    if (Array.isArray(categories)) {\n      return categories;\n    }\n    return [];\n  }\n\n  return {\n    ...item,\n    creator: getCreator(originalData),\n    categories: getCategories(originalData),\n    categoryCount: getCategories(originalData).length,\n    hasCategories: getCategories(originalData).length > 0,\n  };\n}\n\n// Process all items\nconst metadataProcessed = [];\nfor (const item of $input.all()) {\n  const processed = processMetadata(item.json);\n  metadataProcessed.push(processed);\n}\n\nreturn metadataProcessed.map((item) => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        736,
+        48
+      ],
+      "id": "d4c32d96-835a-452c-9c95-ee4ba7dd499a",
+      "name": "Process Metadata"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Stage 4: Validation & Airtable Mapping\nfunction validateAndMap(item) {\n  // Validate required fields\n  function validateRequiredFields(data) {\n    const errors = [];\n\n    if (!data.title) errors.push(\"Missing title\");\n    if (!data.link) errors.push(\"Missing link\");\n    if (!data.source) errors.push(\"Missing source\");\n    if (!data.isoDate) errors.push(\"Missing date\");\n\n    return {\n      valid: errors.length === 0,\n      errors: errors,\n      data: data,\n    };\n  }\n\n  // Map to Airtable schema\n  function mapToAirtableSchema(data) {\n    return {\n      URL: data.link,\n      Title: data.title,\n      Source: data.source,\n      PubDate: data.isoDate,\n      FetchedAt: new Date().toISOString(),\n      Creator: data.creator,\n      Content: data.content,\n      ContentSnippet: data.contentSnippet,\n      Categories: data.categories.join(\", \"),\n      GUID: data.guid,\n      ContentLength: data.contentLength || 0,\n      HasCategories: data.hasCategories || false,\n      ProcessingStatus: \"fetched\",\n      // Default fields for future processing\n      Processed: false,\n      RelevanceScore: 0,\n      IncludeInDigest: false,\n    };\n  }\n\n  const validation = validateRequiredFields(item);\n\n  if (!validation.valid) {\n    return {\n      ...item,\n      validationErrors: validation.errors,\n      isValid: false,\n      airtableReady: false,\n    };\n  }\n\n  const airtableData = mapToAirtableSchema(validation.data);\n\n  return {\n    ...item,\n    isValid: true,\n    airtableReady: true,\n    airtableData: airtableData,\n    validationErrors: [],\n  };\n}\n\n// Process all items\nconst finalProcessed = [];\nfor (const item of $input.all()) {\n  const final = validateAndMap(item.json);\n  finalProcessed.push(final);\n}\n\n// Separate valid and invalid items (items are plain objects, not wrapped)\nconst validItems = finalProcessed.filter((item) => item.isValid);\nconst invalidItems = finalProcessed.filter((item) => !item.isValid);\n\n// Log processing summary\nconsole.log(`Processing Summary:`);\nconsole.log(`- Total items: ${finalProcessed.length}`);\nconsole.log(`- Valid items: ${validItems.length}`);\nconsole.log(`- Invalid items: ${invalidItems.length}`);\n\nif (invalidItems.length > 0) {\n  console.log(`Invalid items:`);\n  invalidItems.forEach((item, index) => {\n    console.log(\n      `  ${index + 1}. ${\n        item.title || \"No title\"\n      }: ${item.validationErrors.join(\", \")}`\n    );\n  });\n}\n\n// Return only valid items wrapped in json structure\nreturn validItems.map((item) => ({ json: item }));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        48
+      ],
+      "id": "b7ac356f-a467-4718-934f-926391496fcc",
+      "name": "Mapper"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appVleyzVn69GL3QA",
+          "mode": "list",
+          "cachedResultName": "FineOpinion",
+          "cachedResultUrl": "https://airtable.com/appVleyzVn69GL3QA"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblFfkke7sEnUNyUQ",
+          "mode": "list",
+          "cachedResultName": "Articles",
+          "cachedResultUrl": "https://airtable.com/appVleyzVn69GL3QA/tblFfkke7sEnUNyUQ"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "URL": "={{ $json.airtableData.URL }}",
+            "Source": "={{ $json.airtableData.Source }}",
+            "PubDate": "={{ $json.airtableData.PubDate }}",
+            "Headline": "={{ $json.airtableData.Title }}",
+            "FetchedAt": "={{ $json.airtableData.FetchedAt }}",
+            "RelevanceScore": 0,
+            "WordCount": 0,
+            "TokenCount": 0
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "GUID",
+              "displayName": "GUID",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "URLHash",
+              "displayName": "URLHash",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "economist",
+                  "value": "economist"
+                },
+                {
+                  "name": "bloomburg",
+                  "value": "bloomburg"
+                },
+                {
+                  "name": "routers",
+                  "value": "routers"
+                },
+                {
+                  "name": "marketwatch",
+                  "value": "marketwatch"
+                },
+                {
+                  "name": "ecb",
+                  "value": "ecb"
+                },
+                {
+                  "name": "nasdaq",
+                  "value": "nasdaq"
+                },
+                {
+                  "name": "bnpparibas",
+                  "value": "bnpparibas"
+                },
+                {
+                  "name": "financemonthly",
+                  "value": "financemonthly"
+                },
+                {
+                  "name": "cnbc",
+                  "value": "cnbc"
+                },
+                {
+                  "name": "money",
+                  "value": "money"
+                },
+                {
+                  "name": "",
+                  "value": ""
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "PubDate",
+              "displayName": "PubDate",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Headline",
+              "displayName": "Headline",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "RelevanceScore",
+              "displayName": "RelevanceScore",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FullText",
+              "displayName": "FullText",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ScrapingStatus",
+              "displayName": "ScrapingStatus",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "success",
+                  "value": "success"
+                },
+                {
+                  "name": "failed",
+                  "value": "failed"
+                },
+                {
+                  "name": "fallback",
+                  "value": "fallback"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "KeyFacts",
+              "displayName": "KeyFacts",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MainTopic",
+              "displayName": "MainTopic",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "EntitiesJSON",
+              "displayName": "EntitiesJSON",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "DataPoints",
+              "displayName": "DataPoints",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "FetchedAt",
+              "displayName": "FetchedAt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ProcessedAt",
+              "displayName": "ProcessedAt",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "ProcessedBy",
+              "displayName": "ProcessedBy",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "WordCount",
+              "displayName": "WordCount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "TitleClean",
+              "displayName": "TitleClean",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SubTopics",
+              "displayName": "SubTopics",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "SentimentJSON",
+              "displayName": "SentimentJSON",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "MarketImpact",
+              "displayName": "MarketImpact",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "low",
+                  "value": "low"
+                },
+                {
+                  "name": "medium",
+                  "value": "medium"
+                },
+                {
+                  "name": "high",
+                  "value": "high"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Urgency",
+              "displayName": "Urgency",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "routine",
+                  "value": "routine"
+                },
+                {
+                  "name": "timely",
+                  "value": "timely"
+                },
+                {
+                  "name": "breaking",
+                  "value": "breaking"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Tags",
+              "displayName": "Tags",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "options": [],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "TokenCount",
+              "displayName": "TokenCount",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "typecast": true
+        }
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        1104,
+        48
+      ],
+      "id": "69f09bc2-4e61-493b-9070-5f09e462adab",
+      "name": "Create or update a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "XX2fmf5ccOPPkhMz",
+          "name": "Airtable Cappy"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "No Operation, do nothing": {
+      "main": [
+        [
+          {
+            "node": "EU Central Bank",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Market Watch",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Nasdaq",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "bnp",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Finance Monthly",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "CNBC",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Money",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EU Central Bank": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Market Watch": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Nasdaq": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "bnp": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Finance Monthly": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "CNBC": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Money": {
+      "main": [
+        [
+          {
+            "node": "Merge RSS",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Merge RSS": {
+      "main": [
+        [
+          {
+            "node": "Normalize RSS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize RSS": {
+      "main": [
+        [
+          {
+            "node": "Content Processor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Processor": {
+      "main": [
+        [
+          {
+            "node": "Process Metadata",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Metadata": {
+      "main": [
+        [
+          {
+            "node": "Mapper",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mapper": {
+      "main": [
+        [
+          {
+            "node": "Create or update a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1482b6a2-4e70-470b-bcdf-7d5eaf590756",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1c23fdf105aaacd4635cc3179c8ec8a79b1339d581cd2a8e15367d996124a9e3"
+  },
+  "id": "Ju0yedCkssS9Ejsi",
+  "tags": [
+    {
+      "createdAt": "2025-10-09T12:55:11.351Z",
+      "updatedAt": "2025-10-09T12:55:11.351Z",
+      "id": "bnS2hLspkH1QiXxQ",
+      "name": "News"
+    }
+  ]
+}
