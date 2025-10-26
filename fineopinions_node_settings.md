@@ -522,57 +522,6 @@ if (invalidItems.length > 0) {
 return validItems.map((item) => ({ json: item }));
 ```
 
-### Node 14: Check for Existing Records
-
-- **Node Type:** Code
-- **Mode:** Run Once for All Items
-- **JavaScript Code:**
-
-**⚠️ IMPORTANT:** This node filters out existing records so we only insert NEW articles.
-
-```javascript
-// Check if records already exist and filter to only new articles
-async function filterNewArticles() {
-  const items = $input.all();
-
-  // Extract all URL hashes to check
-  const urlHashes = items.map((item) => item.json.airtableData.URLHash);
-
-  // Note: You'll need to add an Airtable "List" node before this
-  // to fetch existing records. This code assumes you have that data.
-
-  // For now, we'll pass all items through and let Airtable Upsert handle it
-  // But we'll add a flag to indicate these are potentially new
-
-  return items.map((item) => ({
-    json: {
-      ...item.json,
-      isNewArticle: true, // Flag for tracking
-    },
-  }));
-}
-
-// Simple version: Just pass through with tracking
-// In production, you'd query Airtable first to check existence
-const items = $input.all();
-return items.map((item) => ({
-  json: {
-    ...item.json,
-    isNewArticle: true,
-  },
-}));
-```
-
-**🎯 Better Approach:** Use Airtable's behavior instead of a separate check node.
-
-Instead of this complex check, we'll configure the Airtable node to:
-
-1. Use `URLHash` as the merge field
-2. Only update specific fields if record exists
-3. Set `Status` only for new records
-
-**Skip Node 14 for now** - see the Airtable configuration below for the better approach.
-
 ---
 
 ## 💾 Airtable Integration

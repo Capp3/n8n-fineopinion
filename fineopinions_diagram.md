@@ -99,54 +99,43 @@ Articles transition through these states:
 
 ```mermaid
 graph TB
-    %% Main Entry Point
-    START[⏰ Scheduled Trigger<br/>2x Daily: 7AM & 7PM] --> ORCHESTRATOR[🎭 Feed Orchestrator<br/>Staggered Execution]
+    %% Main Entry Point - Updated to match actual workflow
+    START[⏰ Schedule Trigger<br/>Every 5 hours] --> NOOP[No Operation]
+    NOOP --> FEED1[📰 ECB RSS]
+    NOOP --> FEED2[📰 MarketWatch RSS]
+    NOOP --> FEED3[📰 NASDAQ RSS]
+    NOOP --> FEED4[📰 BNP Paribas RSS]
+    NOOP --> FEED5[📰 Finance Monthly RSS]
+    NOOP --> FEED6[📰 CNBC RSS]
+    NOOP --> FEED7[📰 Money RSS]
 
-    %% Feed Processing (Updated with Actual 7 Feeds)
-    ORCHESTRATOR -->|T+0min| FEED1[📰 ECB Feed]
-    ORCHESTRATOR -->|T+1min| FEED2[📰 MarketWatch Feed]
-    ORCHESTRATOR -->|T+2min| FEED3[📰 NASDAQ Feed]
-    ORCHESTRATOR -->|T+3min| FEED4[📰 BNP Paribas Feed]
-    ORCHESTRATOR -->|T+4min| FEED5[📰 Finance Monthly Feed]
-    ORCHESTRATOR -->|T+5min| FEED6[📰 CNBC Feed]
-    ORCHESTRATOR -->|T+6min| FEED7[📰 Money Feed]
-
-    %% RSS Post-Processing Pipeline (NEW)
-    FEED1 & FEED2 & FEED3 & FEED4 & FEED5 & FEED6 & FEED7 --> MERGE[🔄 Merge Articles]
-    MERGE --> NORMALIZE[🔧 Basic Field Normalizer]
-    NORMALIZE --> CONTENTPROC[📄 Content Processor]
-    CONTENTPROC --> METADATA[🏷️ Metadata Processor]
-    METADATA --> VALIDATE[✅ Field Validator & Mapper]
-
-    %% Deduplication & Processing Pipeline
-    VALIDATE --> DEDUP[🔍 Deduplication Check<br/>Against Database]
-    DEDUP --> LOOP[🔁 Loop Each Article URL]
-    LOOP --> SCRAPE[🌐 Content Scraper Module]
-    SCRAPE --> AIVALIDATE[✅ Content Validation]
-    AIVALIDATE --> AGENT[🤖 AI Agent Review]
-    AGENT --> STORE[💾 Airtable Ingest]
-
-    %% Error Handling
-    SCRAPE -.->|Scraping Failed| ERROR[⚠️ Error Handler]
-    AIVALIDATE -.->|Invalid Content| ERROR
-    NORMALIZE -.->|Format Error| ERROR
-    ERROR --> RETRY{Retry?}
-    RETRY -->|Yes, < 3 attempts| SCRAPE
-    RETRY -->|No, Log & Continue| STORE
+    %% RSS Post-Processing Pipeline (4-Stage)
+    FEED1 & FEED2 & FEED3 & FEED4 & FEED5 & FEED6 & FEED7 --> MERGE[🔄 Merge RSS<br/>Append Mode]
+    MERGE --> NORMALIZE[🔧 Basic Field Normalizer<br/>Extract source, normalize dates]
+    NORMALIZE --> CONTENTPROC[📄 Content Processor<br/>Clean HTML, extract snippet]
+    CONTENTPROC --> METADATA[🏷️ Metadata Processor<br/>Create/categories, generate URLHash]
+    METADATA --> MAPPER[✅ Field Validator & Mapper<br/>Validate & map to Airtable schema]
+    MAPPER --> AIRTABLE[💾 Airtable Upsert<br/>URLHash merge, IF/ELSE logic]
 
     %% Completion
-    STORE --> COMPLETE[✅ Batch Complete]
+    AIRTABLE --> COMPLETE[✅ Workflow Complete<br/>Status: needs_scraping]
 
     style START fill:#4da6ff,stroke:#0066cc,color:white
-    style ORCHESTRATOR fill:#ffa64d,stroke:#cc7a30,color:white
+    style NOOP fill:#90EE90,stroke:#228B22,color:black
+    style FEED1 fill:#FFE4B5,stroke:#D2691E,color:black
+    style FEED2 fill:#FFE4B5,stroke:#D2691E,color:black
+    style FEED3 fill:#FFE4B5,stroke:#D2691E,color:black
+    style FEED4 fill:#FFE4B5,stroke:#D2691E,color:black
+    style FEED5 fill:#FFE4B5,stroke:#D2691E,color:black
+    style FEED6 fill:#FFE4B5,stroke:#D2691E,color:black
+    style FEED7 fill:#FFE4B5,stroke:#D2691E,color:black
     style MERGE fill:#80bfff,stroke:#4da6ff,color:white
     style NORMALIZE fill:#d971ff,stroke:#a33bc2,color:white
     style CONTENTPROC fill:#d971ff,stroke:#a33bc2,color:white
     style METADATA fill:#d971ff,stroke:#a33bc2,color:white
-    style VALIDATE fill:#d971ff,stroke:#a33bc2,color:white
-    style AGENT fill:#ffa64d,stroke:#cc7a30,color:white
-    style STORE fill:#4dbb5f,stroke:#36873f,color:white
-    style ERROR fill:#ff5555,stroke:#cc0000,color:white
+    style MAPPER fill:#d971ff,stroke:#a33bc2,color:white
+    style AIRTABLE fill:#4dbb5f,stroke:#36873f,color:white
+    style COMPLETE fill:#4dbb5f,stroke:#36873f,color:white
 ```
 
 ---
@@ -164,14 +153,20 @@ graph TD
     RSS6[📰 CNBC RSS] --> MERGE
     RSS7[📰 Money RSS] --> MERGE
 
-    %% Post-Processing Pipeline
-    MERGE[🔄 n8n Merge Node<br/>Combine All Feeds] --> STAGE1[🔧 Stage 1: Basic Normalizer<br/>Core fields, GUID, dates]
-    STAGE1 --> STAGE2[📄 Stage 2: Content Processor<br/>HTML cleaning, snippets]
-    STAGE2 --> STAGE3[🏷️ Stage 3: Metadata Processor<br/>Creator, categories]
-    STAGE3 --> STAGE4[✅ Stage 4: Validator & Mapper<br/>Airtable schema compliance]
+    %% Post-Processing Pipeline (No Tagging Strategy)
+    MERGE[🔄 Merge Node<br/>Append Mode] --> STAGE1[🔧 Stage 1: Basic Normalizer<br/>• Extract source from URL<br/>• Normalize dates (ISO 8601)<br/>• Handle missing fields]
+
+    STAGE1 --> STAGE2[📄 Stage 2: Content Processor<br/>• Strip HTML tags<br/>• Extract contentSnippet<br/>• Clean encoding issues]
+
+    STAGE2 --> STAGE3[🏷️ Stage 3: Metadata Processor<br/>• Extract creator<br/>• Parse categories array<br/>• Generate URLHash (djb2)]
+
+    STAGE3 --> STAGE4[✅ Stage 4: Validator & Mapper<br/>• Validate required fields<br/>• Map to Airtable schema<br/>• Format dates correctly]
+
+    %% Airtable Upsert with IF/ELSE Logic
+    STAGE4 --> AIRTABLE[💾 Airtable Upsert<br/>Merge Field: URLHash<br/>IF exists: Update FetchedAt<br/>ELSE: Create with Status = needs_scraping]
 
     %% Output
-    STAGE4 --> OUTPUT[📊 Normalized Data<br/>Ready for Airtable]
+    AIRTABLE --> OUTPUT[✅ Articles Stored<br/>Ready for Workflow 2]
 
     %% Format Examples
     RSS1 -.-> FORMAT1["`ECB Format:
@@ -194,114 +189,27 @@ graph TD
     style STAGE2 fill:#e6b3ff,stroke:#d971ff,color:black
     style STAGE3 fill:#e6b3ff,stroke:#d971ff,color:black
     style STAGE4 fill:#e6b3ff,stroke:#d971ff,color:black
+    style AIRTABLE fill:#4dbb5f,stroke:#36873f,color:white
     style OUTPUT fill:#4dbb5f,stroke:#36873f,color:white
 ```
 
 ---
 
-## 📋 Detailed Architecture Documentation
+## 📋 Workflow 1: Detailed Node Breakdown
 
-**Primary Documentation:**  
-📄 `/memory-bank/rss-feed-architecture.md`
+**Node-by-Node Flow:**
 
-This comprehensive document contains:
+1. **Schedule Trigger** - Runs every 5 hours
+2. **7 RSS Feed Nodes** - Fetch articles from: ECB, MarketWatch, NASDAQ, BNP Paribas, Finance Monthly, CNBC, Money
+3. **Merge Node** - Combines all 7 feeds using "Append" mode
+4. **Basic Field Normalizer** - Extracts source from URL, normalizes dates
+5. **Content Processor** - Strips HTML, extracts content snippets
+6. **Metadata Processor** - Processes creator/categories, generates URLHash
+7. **Field Validator & Mapper** - Validates fields, maps to Airtable schema
+8. **Airtable Upsert** - Uses URLHash for deduplication, sets Status = needs_scraping
 
-1. **System Architecture - High Level**
-
-   - Complete workflow overview
-   - Component interactions
-   - Error handling strategies
-
-2. **Component 1: RSS XML Retrieval**
-
-   - Cache checking logic
-   - HTTP request handling
-   - XML parsing and validation
-   - Output schema definition
-
-3. **Component 2: RSS Post-Processing Pipeline** (NEW)
-
-   - Multi-stage normalization approach
-   - Field mapping strategies
-   - Content cleaning and validation
-   - Airtable schema compliance
-
-4. **Component 3: Article Loop & Deduplication**
-
-   - Feed merging strategy
-   - Deduplication logic (by URL)
-   - Date filtering (24-hour window)
-   - Metadata enrichment
-
-5. **Component 4: Content Scraping Module**
-
-   - Scraping strategy selection (HTTP vs Browser)
-   - HTML parsing heuristics
-   - Content extraction rules
-   - Fallback strategies (including SearXNG)
-
-6. **Component 5: AI Agent Review & Condensation**
-
-   - Prompt engineering structure
-   - Model selection criteria
-   - Relevance scoring (1-10 scale)
-   - JSON output validation
-
-7. **Component 6: Airtable Ingest**
-
-   - Database schema design
-   - Upsert logic
-   - Field mapping
-   - Data retention policy
-
-8. **Complete End-to-End Flow**
-   - Full workflow integration
-   - Metrics and monitoring
-   - Success criteria
-
----
-
-## 🗂️ Component Diagrams Available
-
-All detailed component diagrams are available in `/memory-bank/rss-feed-architecture.md`:
-
-| Component                    | Description                       | Complexity |
-| ---------------------------- | --------------------------------- | ---------- |
-| RSS XML Retrieval            | Feed fetching, caching, parsing   | Medium     |
-| RSS Post-Processing Pipeline | Format normalization & validation | Medium     |
-| Article Loop & Deduplication | Feed merging, URL deduplication   | Medium     |
-| Content Scraping Module      | Multi-strategy web scraping       | High       |
-| AI Agent Review              | Article analysis and condensation | High       |
-| Airtable Ingest              | Database storage and relations    | Medium     |
-| End-to-End Flow              | Complete pipeline integration     | High       |
-| Dependencies & Integration   | External service connections      | Medium     |
-
----
-
-## 🎨 Creative Phase Components
-
-The following components require design decisions in **CREATIVE MODE**:
-
-1. **RSS Post-Processing Architecture** ✅ (Complete)
-
-   - Multi-stage normalization pipeline
-   - Field mapping and content cleaning
-   - Airtable schema compliance
-
-2. **Prompt Engineering** (High Priority)
-
-   - AI Agent prompts for article analysis
-   - Output schema definition
-   - Model-specific optimizations
-
-3. **Content Extraction Heuristics** (Medium Priority)
-
-   - Site-specific extraction rules
-   - Fallback strategies hierarchy
-
-4. **Relevance Scoring Algorithm** (Medium Priority)
-   - Scoring criteria and weights
-   - Topic classification system
+**📖 For detailed node configurations:** See [fineopinions_node_settings.md](./fineopinions_node_settings.md)  
+**📖 For Workflow 2 (Content Scraping & AI):** See [ADR-001](./docs/architecture-decisions/ADR-001-separated-workflows.md)
 
 ---
 
@@ -379,44 +287,5 @@ graph LR
 ```
 
 ---
-
-## 📈 Success Metrics
-
-| Metric                        | Target   | Phase   |
-| ----------------------------- | -------- | ------- |
-| RSS Fetch Success Rate        | > 95%    | Phase 1 |
-| RSS Post-Processing Success   | > 98%    | Phase 1 |
-| Article Scraping Success Rate | > 85%    | Phase 2 |
-| AI Processing Success Rate    | > 90%    | Phase 3 |
-| Deduplication Accuracy        | > 99%    | Phase 1 |
-| Airtable Ingest Success Rate  | > 98%    | Phase 4 |
-| End-to-End Processing Time    | < 15 min | Phase 4 |
-| Average Articles per Run      | 35-70    | Phase 4 |
-
----
-
-## 🔗 Related Documentation
-
-- **Project Brief:** `/memory-bank/projectbrief.md`
-- **Product Context:** `/memory-bank/productContext.md`
-- **Technical Context:** `/memory-bank/techContext.md`
-- **System Patterns:** `/memory-bank/systemPatterns.md`
-- **Active Context:** `/memory-bank/activeContext.md`
-- **Progress Tracking:** `/memory-bank/progress.md`
-- **Task List:** `/tasks.md`
-- **Node Settings:** `/fineopinions_node_settings.md`
-
----
-
-## 🎯 Current Project Status
-
-**Phase:** Creative Phase Complete (RSS Post-Processing)  
-**Mode:** IMPLEMENT MODE  
-**Next Steps:**
-
-1. Build RSS post-processing pipeline
-2. Prompt Engineering (AI Agent)
-3. Content Extraction Strategy
-4. Full BUILD MODE implementation
 
 **Last Updated:** October 25, 2025
